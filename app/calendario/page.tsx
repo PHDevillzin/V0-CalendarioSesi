@@ -1757,5 +1757,5 @@ export default function CalendarioEscolar() {
         </DialogContent>
       </Dialog>
     </div>
-  )\
+  )
 }
