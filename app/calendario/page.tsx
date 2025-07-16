@@ -1315,8 +1315,6 @@ export default function CalendarioEscolar() {
                   </CardContent>
                 </Card>
               </div>
-                </div>
-              </div>
             </div>
           </section>
         </div>
