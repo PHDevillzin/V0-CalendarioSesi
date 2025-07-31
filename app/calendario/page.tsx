@@ -58,36 +58,247 @@ const eventTypes = [
   { value: "periodo", label: "Fim de Período", color: "bg-purple-500" },
 ]
 
-// Estados brasileiros
-const estadosBrasileiros = [
-  { value: "ac", label: "Acre" },
-  { value: "al", label: "Alagoas" },
-  { value: "ap", label: "Amapá" },
-  { value: "am", label: "Amazonas" },
-  { value: "ba", label: "Bahia" },
-  { value: "ce", label: "Ceará" },
-  { value: "df", label: "Distrito Federal" },
-  { value: "es", label: "Espírito Santo" },
-  { value: "go", label: "Goiás" },
-  { value: "ma", label: "Maranhão" },
-  { value: "mt", label: "Mato Grosso" },
-  { value: "ms", label: "Mato Grosso do Sul" },
-  { value: "mg", label: "Minas Gerais" },
-  { value: "pa", label: "Pará" },
-  { value: "pb", label: "Paraíba" },
-  { value: "pr", label: "Paraná" },
-  { value: "pe", label: "Pernambuco" },
-  { value: "pi", label: "Piauí" },
-  { value: "rj", label: "Rio de Janeiro" },
-  { value: "rn", label: "Rio Grande do Norte" },
-  { value: "rs", label: "Rio Grande do Sul" },
-  { value: "ro", label: "Rondônia" },
-  { value: "rr", label: "Roraima" },
-  { value: "sc", label: "Santa Catarina" },
-  { value: "sp", label: "São Paulo" },
-  { value: "se", label: "Sergipe" },
-  { value: "to", label: "Tocantins" },
-]
+// Municipalities and Schools data based on the provided image
+const municipalitiesData = {
+  Todos: [
+    "Escola SESI-SP de Alumínio",
+    "Escola SESI-SP de Álvares Machado",
+    "SESI - Americana - DR. ESTEVAM FARAONE",
+    "Escola SESI-SP Mandel Steinbruch",
+    "Escola SESI-SP de Americana - Machadinho",
+    "Escola SESI-SP de Anápolis",
+    "SESI - Araraquara - Francisca da Silva Vilela",
+    "Escola SESI-SP de Araraquara - 14. Presidente",
+    "SESI - Araraquara - WALTON LINO",
+    "SESI - Araras - MARIA HELENA NOGUEIRA",
+    "SESI - Estação de Cultura - Atibaia",
+    "SESI - Barueri - CAT Maria Antonieta Junqueira Pamplona de Menezes",
+    "SESI - Bauru - RAPHAEL NOSCHESE",
+    "Escola SESI-SP de Bebedouro",
+    "SESI - Bebedouro - SALVADOR BIONARIO",
+    "Escola SESI-SP de Birigui",
+    "Escola SESI-SP de Botucatu",
+    "SESI - Botucatu - SALVADOR FIMACE",
+    "Escola SESI-SP de Botucatu",
+    "Escola SESI-SP de Bragança Paulista",
+    "Escola SESI-SP Carlos Eduardo Moreira Ferreira",
+    "Escola SESI-SP de Cachoeira - Pg. Residencial Maria Elmira",
+    "Escola SESI-SP de Cajamar",
+    "SESI - Campinas Americana - PROFESSORA MARIA BIAZ",
+    "SESI - Campinas Santos Dumont - JOAQUIM GABRIEL PENTEADO",
+    "Escola SESI-SP de Campinas - Parque Itália",
+    "Escola SESI-SP de Campinas - Bacuri",
+    "Escola SESI-SP de Campo Limpo Paulista",
+    "Escola SESI-SP de Caraguatatuba",
+    "Escola SESI-SP de Catanduva",
+    "SESI - Cotia - MARIA HELENA NOGUEIRA",
+    "SESI - Cubatão Af Carvalho - MARIO AMATO",
+    "SESI - Estação de Cultura - Cosmópolis",
+    "SESI - Cotia - Olívia Espírito Santos",
+    "SESI - Cruzeiro - OCTAVIO MENDES FILHO",
+    "Escola SESI-SP de Cotia",
+    "Escola SESI-SP de Cruzeiro",
+    "SESI - Cruzeiro - JOSÉ BENEDITO NOVAES",
+    "Escola SESI-SP de Diadema - Tabata",
+    "Escola SESI-SP de Descalvado",
+    "SESI - Diadema - JOSÉ ROBERTO MAGALHÃES TEIXEIRA",
+    "Escola SESI-SP de Diadema - Tabata",
+    "Escola SESI-SP de Fernandópolis",
+    "Escola SESI-SP Parque de Viracopos",
+    "SESI - França - JOSÉ BENEDITO VIEIRA",
+    "Escola SESI-SP de França - Vila Scarlaccci",
+    "Escola SESI-SP de Garça",
+    "Escola SESI-SP de Guaratinguetá",
+    "SESI - Guarulhos - ADRIANA DIAS DE FIGUEIREDO",
+    "Escola SESI-SP de Guarulhos - Jardim Adriana",
+    "Escola SESI-SP de Hortolândia",
+    "Escola SESI-SP de Igaraçu do Tietê",
+    "SESI - Indaiatuba - ANTÔNIO ERMÍRIO DE MORAES",
+    "Escola SESI-SP de Indaiatuba",
+    "SESI - Itapetininga - BENEDITO MARQUES DA SILVA",
+    "Escola SESI-SP de Itapetininga",
+    "Escola SESI-SP de Itapira",
+    "Escola SESI-SP Comandante Emílio Benjamin Jales",
+    "SESI - Itaquaquecetuba - NOEMIA FERREIRA",
+    "SESI - Jacarei - KANAM SIMÃO HACY",
+    "SESI - Jau - RUY MARTINS ALTENFELDER SILVA",
+    "SESI - Jundiaí - ELCIO GUERRAZZI",
+    "SESI - Limeira - MARIO PUGLIESI",
+    "SESI - Limeira - JOSÉ BENEDITO NOVAES",
+    "SESI - Matão - PROFESSOR AZOR SILVEIRA LEITE",
+    "SESI - Mauá - MN. RAPHAEL DE ALMEIDA MAGALHÃES",
+    "SESI - Mogi das Cruzes - ADRIANA DIAS DE FIGUEIREDO",
+    "Escola SESI-SP de Mogi das Cruzes",
+    "SESI - Mogi Guaçu - MN. ROBERTO DELLA MANNA",
+    "Escola SESI-SP de Mogi Guaçu",
+    "Escola SESI-SP de Monte Alto",
+    "Escola SESI-SP Chafi Gohara",
+    "SESI - Osasco - LUIS EULÁLIA DE BUENO VIDIGAL FILHO",
+    "Escola SESI-SP de Osasco - Jardim Piratininga",
+    "Escola SESI-SP de Ourinhos",
+    "SESI - Ourinhos - MANOEL DA COSTA SANTOS",
+    "Escola SESI-SP de Ourinhos",
+    "Escola SESI-SP Carlos Arnaldo Gomes",
+    "Escola SESI-SP de Peruíbe",
+    "Escola SESI-SP de Penápolis",
+    "Escola SESI-SP Paulo Saul",
+    "SESI - Piracicaba - MARIO MANTONI",
+    "Escola SESI-SP de Piracicaba - Vila Industrial",
+    "Escola SESI-SP de Piracicaba",
+    "Escola SESI-SP de Pirassununga",
+    "Escola SESI-SP de Pompéia",
+    "SESI - Presidente Epitácio - CARLOS CARDOSO DE ALMEIDA AMORIM",
+    "Escola SESI-SP de Presidente Epitácio",
+    "SESI - Presidente Prudente - BELMIRO JESUS",
+    "SESI - Ribeirão Pires - JOSÉ BENEDITO DE OLIVEIRA JUNIOR",
+    "SESI - Rio Claro - JOSÉ FELÍCIO CASTELLANO",
+    "SESI - Santa Bárbara D'Oeste - AMÉRICO EMÍLIO ROMI",
+    "SESI - Estação de Cultura - Santa Rita do Passa Quatro",
+    "SESI - Santana de Parnaíba - JOSÉ CARLOS - NATALINI",
+    "SESI - Santo André - MARIO COVAS JUNIOR",
+    "SESI - Santos - PAULO DE CASTRO CORREIA",
+    "SESI - São Bernardo do Campo - ALBANO FRANCO",
+    "SESI - São Carlos - ERNESTO PEREIRA LOPES FILHO",
+    "SESI - São José do Rio Preto - JORGE DUPRAT FIGUEIREDO",
+    "SESI - São José dos Campos - SANTOS DUMONT",
+    "SESI - Belenzinho",
+    "SESI - Ipiranga",
+    "SESI - Tatuapé",
+    "SESI - Vila Bianca",
+    "SESI - Vila Carrão",
+    "SESI - Vila Císper",
+    "SESI - Vila Espanhola",
+    "SESI - Vila Leopoldina",
+    "SESI - Vila das Mercês",
+    "SESI - Paulista",
+    "SESI - Cidade Carvalho",
+    "SESI - Lauzane Paulista",
+    "SESI - Sertãozinho - NELSON ABRÃO JOÃO",
+    "SESI - Sorocaba - SEN JOSÉ ERMÍRIO DE MORAES",
+    "SESI - Sumaré - FUAD ASSEF MALUF",
+    "SESI - Suzano - Max Feffer",
+    "SESI - Tatuí - WILSON SANPAIA",
+    "SESI - Taubaté - LUIZ QUEIROZ VILLARES",
+    "SESI - Valinhos - JOSÉ BENEDITO NORAES FILHO",
+  ],
+  Alumínio: ["Escola SESI-SP de Alumínio"],
+  "Álvares Machado": ["Escola SESI-SP de Álvares Machado"],
+  Americana: [
+    "SESI - Americana - DR. ESTEVAM FARAONE",
+    "Escola SESI-SP Mandel Steinbruch",
+    "Escola SESI-SP de Americana - Machadinho",
+  ],
+  Anápolis: ["Escola SESI-SP de Anápolis"],
+  Araraquara: [
+    "SESI - Araraquara - Francisca da Silva Vilela",
+    "Escola SESI-SP de Araraquara - 14. Presidente",
+    "SESI - Araraquara - WALTON LINO",
+  ],
+  Araras: ["SESI - Araras - MARIA HELENA NOGUEIRA"],
+  Atibaia: ["SESI - Estação de Cultura - Atibaia"],
+  Barueri: ["SESI - Barueri - CAT Maria Antonieta Junqueira Pamplona de Menezes"],
+  Bauru: ["SESI - Bauru - RAPHAEL NOSCHESE"],
+  Bebedouro: ["Escola SESI-SP de Bebedouro", "SESI - Bebedouro - SALVADOR BIONARIO"],
+  Birigui: ["Escola SESI-SP de Birigui"],
+  Botucatu: ["Escola SESI-SP de Botucatu", "SESI - Botucatu - SALVADOR FIMACE"],
+  "Bragança Paulista": ["Escola SESI-SP de Bragança Paulista"],
+  Britas: ["Escola SESI-SP Carlos Eduardo Moreira Ferreira"],
+  Cachoeira: ["Escola SESI-SP de Cachoeira - Pg. Residencial Maria Elmira"],
+  Cajamar: ["Escola SESI-SP de Cajamar"],
+  Campinas: [
+    "SESI - Campinas Americana - PROFESSORA MARIA BIAZ",
+    "SESI - Campinas Santos Dumont - JOAQUIM GABRIEL PENTEADO",
+    "Escola SESI-SP de Campinas - Parque Itália",
+    "Escola SESI-SP de Campinas - Bacuri",
+  ],
+  "Campo Limpo Paulista": ["Escola SESI-SP de Campo Limpo Paulista"],
+  Caraguatatuba: ["Escola SESI-SP de Caraguatatuba"],
+  Catanduva: ["Escola SESI-SP de Catanduva"],
+  Cotia: ["SESI - Cotia - MARIA HELENA NOGUEIRA"],
+  "Cubatão Af Carvalho": ["SESI - Cubatão Af Carvalho - MARIO AMATO"],
+  Cosmópolis: ["SESI - Estação de Cultura - Cosmópolis"],
+  Cotia: ["SESI - Cotia - Olívia Espírito Santos", "Escola SESI-SP de Cotia"],
+  Cruzeiro: [
+    "SESI - Cruzeiro - OCTAVIO MENDES FILHO",
+    "Escola SESI-SP de Cruzeiro",
+    "SESI - Cruzeiro - JOSÉ BENEDITO NOVAES",
+  ],
+  Descalvado: ["Escola SESI-SP de Descalvado"],
+  Diadema: ["SESI - Diadema - JOSÉ ROBERTO MAGALHÃES TEIXEIRA", "Escola SESI-SP de Diadema - Tabata"],
+  Fernandópolis: ["Escola SESI-SP de Fernandópolis"],
+  "Franca de Viracopos": ["Escola SESI-SP Parque de Viracopos"],
+  França: ["SESI - França - JOSÉ BENEDITO VIEIRA", "Escola SESI-SP de França - Vila Scarlaccci"],
+  Garça: ["Escola SESI-SP de Garça"],
+  Guaratinguetá: ["Escola SESI-SP de Guaratinguetá"],
+  Guarulhos: ["SESI - Guarulhos - ADRIANA DIAS DE FIGUEIREDO", "Escola SESI-SP de Guarulhos - Jardim Adriana"],
+  Hortolândia: ["Escola SESI-SP de Hortolândia"],
+  "Igaraçu do Tietê": ["Escola SESI-SP de Igaraçu do Tietê"],
+  Indaiatuba: ["SESI - Indaiatuba - ANTÔNIO ERMÍRIO DE MORAES", "Escola SESI-SP de Indaiatuba"],
+  Itapetininga: ["SESI - Itapetininga - BENEDITO MARQUES DA SILVA", "Escola SESI-SP de Itapetininga"],
+  Itapira: ["Escola SESI-SP de Itapira"],
+  Itabira: ["Escola SESI-SP Comandante Emílio Benjamin Jales"],
+  Itaquaquecetuba: ["SESI - Itaquaquecetuba - NOEMIA FERREIRA"],
+  Jacarei: ["SESI - Jacarei - KANAM SIMÃO HACY"],
+  Jau: ["SESI - Jau - RUY MARTINS ALTENFELDER SILVA"],
+  Jundiaí: ["SESI - Jundiaí - ELCIO GUERRAZZI"],
+  Limeira: ["SESI - Limeira - MARIO PUGLIESI", "SESI - Limeira - JOSÉ BENEDITO NOVAES"],
+  Matão: ["SESI - Matão - PROFESSOR AZOR SILVEIRA LEITE"],
+  Mauá: ["SESI - Mauá - MN. RAPHAEL DE ALMEIDA MAGALHÃES"],
+  "Mogi das Cruzes": ["SESI - Mogi das Cruzes - ADRIANA DIAS DE FIGUEIREDO", "Escola SESI-SP de Mogi das Cruzes"],
+  "Mogi Guaçu": ["SESI - Mogi Guaçu - MN. ROBERTO DELLA MANNA", "Escola SESI-SP de Mogi Guaçu"],
+  "Monte Alto": ["Escola SESI-SP de Monte Alto"],
+  "Nova Odessa": ["Escola SESI-SP Chafi Gohara"],
+  Osasco: ["SESI - Osasco - LUIS EULÁLIA DE BUENO VIDIGAL FILHO", "Escola SESI-SP de Osasco - Jardim Piratininga"],
+  Ourinhos: ["SESI - Ourinhos - MANOEL DA COSTA SANTOS", "Escola SESI-SP de Ourinhos"],
+  "Paraguaçu Paulista": ["Escola SESI-SP Carlos Arnaldo Gomes"],
+  Peruíbe: ["Escola SESI-SP de Peruíbe"],
+  Penápolis: ["Escola SESI-SP de Penápolis"],
+  "Piracicaba/Iracemápolis": ["Escola SESI-SP Paulo Saul"],
+  Piracicaba: [
+    "SESI - Piracicaba - MARIO MANTONI",
+    "Escola SESI-SP de Piracicaba - Vila Industrial",
+    "Escola SESI-SP de Piracicaba",
+  ],
+  Pirassununga: ["Escola SESI-SP de Pirassununga"],
+  Pompéia: ["Escola SESI-SP de Pompéia"],
+  "Presidente Epitácio": [
+    "SESI - Presidente Epitácio - CARLOS CARDOSO DE ALMEIDA AMORIM",
+    "Escola SESI-SP de Presidente Epitácio",
+  ],
+  "Presidente Prudente": ["SESI - Presidente Prudente - BELMIRO JESUS"],
+  "Ribeirão Pires": ["SESI - Ribeirão Pires - JOSÉ BENEDITO DE OLIVEIRA JUNIOR"],
+  "Rio Claro": ["SESI - Rio Claro - JOSÉ FELÍCIO CASTELLANO"],
+  "Santa Bárbara D'Oeste": ["SESI - Santa Bárbara D'Oeste - AMÉRICO EMÍLIO ROMI"],
+  "Santa Rita do Passa Quatro": ["SESI - Estação de Cultura - Santa Rita do Passa Quatro"],
+  "Santana de Parnaíba": ["SESI - Santana de Parnaíba - JOSÉ CARLOS - NATALINI"],
+  "Santo André": ["SESI - Santo André - MARIO COVAS JUNIOR"],
+  Santos: ["SESI - Santos - PAULO DE CASTRO CORREIA"],
+  "São Bernardo do Campo": ["SESI - São Bernardo do Campo - ALBANO FRANCO"],
+  "São Carlos": ["SESI - São Carlos - ERNESTO PEREIRA LOPES FILHO"],
+  "São José do Rio Preto": ["SESI - São José do Rio Preto - JORGE DUPRAT FIGUEIREDO"],
+  "São José dos Campos": ["SESI - São José dos Campos - SANTOS DUMONT"],
+  "São Paulo": [
+    "SESI - Belenzinho",
+    "SESI - Ipiranga",
+    "SESI - Tatuapé",
+    "SESI - Vila Bianca",
+    "SESI - Vila Carrão",
+    "SESI - Vila Císper",
+    "SESI - Vila Espanhola",
+    "SESI - Vila Leopoldina",
+    "SESI - Vila das Mercês",
+    "SESI - Paulista",
+    "SESI - Cidade Carvalho",
+    "SESI - Lauzane Paulista",
+  ],
+  Sertãozinho: ["SESI - Sertãozinho - NELSON ABRÃO JOÃO"],
+  Sorocaba: ["SESI - Sorocaba - SEN JOSÉ ERMÍRIO DE MORAES"],
+  Sumaré: ["SESI - Sumaré - FUAD ASSEF MALUF"],
+  Suzano: ["SESI - Suzano - Max Feffer"],
+  Tatuí: ["SESI - Tatuí - WILSON SANPAIA"],
+  Taubaté: ["SESI - Taubaté - LUIZ QUEIROZ VILLARES"],
+  Valinhos: ["SESI - Valinhos - JOSÉ BENEDITO NORAES FILHO"],
+}
 
 // Function to generate unique ID
 const generateUniqueId = () => {
@@ -103,7 +314,10 @@ export default function CalendarioEscolar() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
   const [eventToDelete, setEventToDelete] = useState<any>(null)
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
-  const [selectedEstado, setSelectedEstado] = useState<string>("")
+  
+  // State for municipality and school selection
+  const [selectedMunicipality, setSelectedMunicipality] = useState<string>("")
+  const [selectedSchool, setSelectedSchool] = useState<string>("")
 
   // Form state for modal
   const [eventForm, setEventForm] = useState({
@@ -130,6 +344,20 @@ export default function CalendarioEscolar() {
     first: { start: string; end: string } | null
     second: { start: string; end: string } | null
   } | null>(null)
+
+  // Get available schools based on selected municipality
+  const getAvailableSchools = () => {
+    if (!selectedMunicipality || selectedMunicipality === "Todos") {
+      return municipalitiesData["Todos"]
+    }
+    return municipalitiesData[selectedMunicipality] || []
+  }
+
+  // Handle municipality change
+  const handleMunicipalityChange = (value: string) => {
+    setSelectedMunicipality(value)
+    setSelectedSchool("") // Reset school selection when municipality changes
+  }
 
   // Count holidays within the academic year period
   const countHolidaysInAcademicYear = () => {
@@ -631,20 +859,50 @@ export default function CalendarioEscolar() {
                           href="#"
                           className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
                         >
-                          Sobre a Instituição
+                          Entidades
                         </a>
                         <a
                           href="#"
                           className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
                         >
-                          Missão e Valores
+                          Unidades
                         </a>
                         <a
                           href="#"
                           className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
                         >
-                          Organograma
+                          Grupo de Unidades
                         </a>
+                        <a
+                          href="#"
+                          className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                        >
+                          Escolas Móveis
+                        </a>
+                        <a
+                          href="#"
+                          className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                        >
+                          Funcionários
+                        </a>
+                        <a
+                          href="#"
+                          className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                        >
+                          Cargos
+                        </a>
+                        <a
+                          href="#"
+                          className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                        >
+                          Código de Compra
+                        </a>
+                        <Link
+                          href="/calendario"
+                          className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors bg-red-100 font-medium"
+                        >
+                          Calendário do Sistema
+                        </Link>
                       </div>
                     </details>
                   </div>
@@ -756,12 +1014,6 @@ export default function CalendarioEscolar() {
                         >
                           Controle de ambientes
                         </Link>
-                        <Link
-                          href="/calendario"
-                          className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors bg-red-100 font-medium"
-                        >
-                          Calendário do Sistema
-                        </Link>
                       </div>
                     </details>
                   </div>
@@ -798,19 +1050,36 @@ export default function CalendarioEscolar() {
 
           {/* Right Column - 70% */}
           <section className="lg:w-[70%] space-y-6">
-            {/* Page Title */}
-            <Card className="border-red-200 bg-white">
-              <CardHeader>
-                <CardTitle className="text-red-800">Calendário Escolar</CardTitle>
-                <div className="text-red-600">Sistema de gerenciamento de eventos e feriados escolares</div>
-              </CardHeader>
-            </Card>
 
             <div className="space-y-8">
               <div className="space-y-8">
                 {/* Calendar - Takes 3 columns */}
                 <div>
                   <Card className="border-red-200 bg-white">
+                  
+                    {/* Menu Horizontal */}
+                    <div className="px-6 py-3 border-b border-red-100 bg-red-600">
+                      <div className="flex items-center space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-white hover:bg-red-700 hover:text-white px-4 py-2"
+                        >
+                          Cadastros
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsConfigModalOpen(true)}
+                          className="text-white hover:bg-red-700 hover:text-white px-4 py-2"
+                        >
+                          Configurações
+                        </Button>
+                      </div>
+                    </div>
+
+
+
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-red-800 flex items-center space-x-2">
@@ -851,24 +1120,22 @@ export default function CalendarioEscolar() {
                     {/* Add Visualization Section here */}
                     <div className="px-6 py-4 border-b border-red-100 bg-red-25">
   <div className="space-y-4">
-    <h3 className="text-lg font-semibold text-red-800">Visualização</h3>
+    <h3 className="text-lg font-semibold text-red-800">Filtros</h3>
 
-    {/* Comboboxes in line with labels above */}
-    <div className="grid grid-cols-4 gap-4">
-      {/* Estados Combobox */}
-      <div className="space-y-2">
-        <Label className="text-red-700 text-sm font-medium">Estados</Label>
-        <Select
-          value={selectedEstado}
-          onValueChange={(value) => setSelectedEstado(value)}
-        >
-          <SelectTrigger className="border-red-200 focus:border-red-500 bg-white">
-            <SelectValue placeholder="Selecione um estado" />
+    {/* Comboboxes stacked vertically with labels on the left */}
+    <div className="space-y-3">
+      {/* Município Combobox */}
+      <div className="flex items-center gap-4">
+        <Label className="text-red-700 text-sm font-medium w-20">Município</Label>
+        <Select value={selectedMunicipality} onValueChange={handleMunicipalityChange}>
+          <SelectTrigger className="border-red-200 focus:border-red-500 bg-white flex-1">
+            <SelectValue placeholder="Selecione um município" />
           </SelectTrigger>
           <SelectContent>
-            {estadosBrasileiros.map((estado) => (
-              <SelectItem key={estado.value} value={estado.value}>
-                {estado.label}
+            <SelectItem value="Todos">Todos</SelectItem>
+            {Object.keys(municipalitiesData).filter(key => key !== "Todos").sort().map((municipality) => (
+              <SelectItem key={municipality} value={municipality}>
+                {municipality}
               </SelectItem>
             ))}
           </SelectContent>
@@ -876,27 +1143,27 @@ export default function CalendarioEscolar() {
       </div>
 
       {/* Unidade Combobox */}
-      <div className="space-y-2">
-        <Label className="text-red-700 text-sm font-medium">Unidade</Label>
-        <Select>
-          <SelectTrigger className="border-red-200 focus:border-red-500 bg-white">
+      <div className="flex items-center gap-4">
+        <Label className="text-red-700 text-sm font-medium w-20">Unidade</Label>
+        <Select value={selectedSchool} onValueChange={setSelectedSchool}>
+          <SelectTrigger className="border-red-200 focus:border-red-500 bg-white flex-1">
             <SelectValue placeholder="Selecione uma unidade" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="unidade1">Unidade Central</SelectItem>
-            <SelectItem value="unidade2">Unidade Norte</SelectItem>
-            <SelectItem value="unidade3">Unidade Sul</SelectItem>
-            <SelectItem value="unidade4">Unidade Leste</SelectItem>
-            <SelectItem value="unidade5">Unidade Oeste</SelectItem>
+            {getAvailableSchools().map((school, index) => (
+              <SelectItem key={`${school}-${index}`} value={school}>
+                {school}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
 
       {/* Turma Combobox */}
-      <div className="space-y-2">
-        <Label className="text-red-700 text-sm font-medium">Turma</Label>
+      <div className="flex items-center gap-4">
+        <Label className="text-red-700 text-sm font-medium w-20">Turma</Label>
         <Select>
-          <SelectTrigger className="border-red-200 focus:border-red-500 bg-white">
+          <SelectTrigger className="border-red-200 focus:border-red-500 bg-white flex-1">
             <SelectValue placeholder="Selecione uma turma" />
           </SelectTrigger>
           <SelectContent>
@@ -909,34 +1176,6 @@ export default function CalendarioEscolar() {
           </SelectContent>
         </Select>
       </div>
-
-      {/* Docentes Combobox */}
-      <div className="space-y-2">
-        <Label className="text-red-700 text-sm font-medium">Docentes</Label>
-        <Select>
-          <SelectTrigger className="border-red-200 focus:border-red-500 bg-white">
-            <SelectValue placeholder="Selecione um docente" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="maria">Prof. Maria Silva</SelectItem>
-            <SelectItem value="joao">Prof. João Santos</SelectItem>
-            <SelectItem value="ana">Prof. Ana Costa</SelectItem>
-            <SelectItem value="carlos">Prof. Carlos Oliveira</SelectItem>
-            <SelectItem value="lucia">Prof. Lúcia Ferreira</SelectItem>
-            <SelectItem value="pedro">Prof. Pedro Almeida</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-
-    {/* Configurações button below comboboxes */}
-    <div className="flex justify-center pt-2">
-      <Button
-        onClick={() => setIsConfigModalOpen(true)}
-        className="bg-red-600 hover:bg-red-700 text-white"
-      >
-        Configurações
-      </Button>
     </div>
   </div>
 </div>
@@ -1315,7 +1554,6 @@ export default function CalendarioEscolar() {
                   </CardContent>
                 </Card>
               </div>
-            </div>
           </section>
         </div>
       </main>
@@ -1543,7 +1781,7 @@ export default function CalendarioEscolar() {
 
               {/* Save Semesters Button */}
               <div className="flex justify-center">
-                <Button onClick={saveSemesters} onClick={saveSemesters} className="bg-red-600 hover:bg-red-700 text-white px-8">
+                <Button onClick={saveSemesters} className="bg-red-600 hover:bg-red-700 text-white px-8">
                   Salvar Configuração dos Semestres
                 </Button>
               </div>
@@ -1593,6 +1831,9 @@ export default function CalendarioEscolar() {
               className="border-red-300 text-red-600 hover:bg-red-50"
             >
               Fechar
+            </Button>
+            <Button onClick={saveEvent} className="bg-red-600 hover:bg-red-700 text-white">
+              Salvar
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1758,5 +1999,5 @@ export default function CalendarioEscolar() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  )\
 }

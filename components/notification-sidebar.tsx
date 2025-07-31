@@ -12,12 +12,12 @@ export function NotificationSidebar({ isOpen, onClose }: NotificationSidebarProp
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[100] flex">
+    <div className="fixed inset-0 z-50 flex">
       {/* Overlay */}
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
 
       {/* Sidebar */}
-      <div className="ml-auto w-80 bg-white shadow-xl h-full overflow-y-auto relative z-[101]">
+      <div className="ml-auto w-80 bg-white shadow-xl h-full overflow-y-auto">
         <div className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-red-800 flex items-center">

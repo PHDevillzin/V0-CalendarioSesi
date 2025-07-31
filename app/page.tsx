@@ -95,20 +95,50 @@ export default function TwoColumnTemplate() {
                           href="#"
                           className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
                         >
-                          Sobre a Instituição
+                          Entidades
                         </a>
                         <a
                           href="#"
                           className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
                         >
-                          Missão e Valores
+                          Unidades
                         </a>
                         <a
                           href="#"
                           className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
                         >
-                          Organograma
+                          Grupo de Unidades
                         </a>
+                        <a
+                          href="#"
+                          className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                        >
+                          Escolas Móveis
+                        </a>
+                        <a
+                          href="#"
+                          className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                        >
+                          Funcionários
+                        </a>
+                        <a
+                          href="#"
+                          className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                        >
+                          Cargos
+                        </a>
+                        <a
+                          href="#"
+                          className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                        >
+                          Código de Compra
+                        </a>
+                        <Link
+                          href="/calendario"
+                          className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                        >
+                          Calendário do Sistema
+                        </Link>
                       </div>
                     </details>
                   </div>
@@ -219,12 +249,6 @@ export default function TwoColumnTemplate() {
                           className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
                         >
                           Controle de ambientes
-                        </Link>
-                        <Link
-                          href="/calendario"
-                          className="block px-8 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
-                        >
-                          Calendário do Sistema
                         </Link>
                       </div>
                     </details>

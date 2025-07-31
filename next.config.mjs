@@ -1,4 +1,3 @@
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -9,9 +8,6 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
-  },
-  experimental: {
-    optimizePackageImports: ['@radix-ui/react-icons'],
   },
 }
 
