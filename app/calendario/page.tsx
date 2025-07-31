@@ -1060,13 +1060,30 @@ export default function CalendarioEscolar() {
                     {/* Menu Horizontal */}
                     <div className="px-6 py-3 border-b border-red-100 bg-red-600">
                       <div className="flex items-center space-x-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-white hover:bg-red-700 hover:text-white px-4 py-2"
-                        >
-                          Cadastros
-                        </Button>
+                        <div className="relative">
+                          <details className="group">
+                            <summary className="flex items-center justify-between px-4 py-2 text-white hover:bg-red-700 hover:text-white transition-colors cursor-pointer list-none rounded">
+                              <div className="flex items-center">
+                                <span>Cadastros</span>
+                              </div>
+                              <ChevronDown className="h-4 w-4 ml-2 transition-transform group-open:rotate-180" />
+                            </summary>
+                            <div className="absolute top-full left-0 mt-1 bg-white border border-red-200 rounded-lg shadow-lg z-50 min-w-[200px]">
+                              <a
+                                href="#"
+                                className="block px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-800 transition-colors border-b border-red-100"
+                              >
+                                Cadastrar Tipos de Eventos
+                              </a>
+                              <a
+                                href="#"
+                                className="block px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-800 transition-colors"
+                              >
+                                Cadastrar Eventos
+                              </a>
+                            </div>
+                          </details>
+                        </div>
                         <Button
                           variant="ghost"
                           size="sm"
