@@ -314,7 +314,7 @@ export default function CalendarioEscolar() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
   const [eventToDelete, setEventToDelete] = useState<any>(null)
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
-  
+
   // State for municipality and school selection
   const [selectedMunicipality, setSelectedMunicipality] = useState<string>("")
   const [selectedSchool, setSelectedSchool] = useState<string>("")
@@ -655,7 +655,7 @@ export default function CalendarioEscolar() {
     } else {
       // Regular single event logic (existing code)
       const uniqueId = generateUniqueId()
-      const clickedDateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")}`
+      const clickedDateString = `${year}-${String(month + 1).padStart(2, "00")}-${String(selectedDay).padStart(2, "0")}`
       const eventDateString = addDayToDate(clickedDateString)
 
       if (!newEvents[clickedDateString]) {
@@ -1056,7 +1056,7 @@ export default function CalendarioEscolar() {
                 {/* Calendar - Takes 3 columns */}
                 <div>
                   <Card className="border-red-200 bg-white">
-                  
+
                     {/* Menu Horizontal */}
                     <div className="px-6 py-3 border-b border-red-100 bg-red-600">
                       <div className="flex items-center space-x-1">
@@ -1554,6 +1554,7 @@ export default function CalendarioEscolar() {
                   </CardContent>
                 </Card>
               </div>
+            </div>
           </section>
         </div>
       </main>
@@ -1999,5 +2000,5 @@ export default function CalendarioEscolar() {
         </DialogContent>
       </Dialog>
     </div>
-  )\
+  )
 }
