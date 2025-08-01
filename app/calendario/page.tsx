@@ -49,13 +49,18 @@ const monthNames = [
 
 const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 
-// Event types
-const eventTypes = [
-  { value: "feriado", label: "Feriado", color: "bg-red-500" },
-  { value: "inicio", label: "Início de Período", color: "bg-green-500" },
-  { value: "reuniao", label: "Reunião", color: "bg-blue-500" },
-  { value: "avaliacao", label: "Avaliação", color: "bg-yellow-500" },
-  { value: "periodo", label: "Fim de Período", color: "bg-purple-500" },
+// Available colors for event types
+const availableColors = [
+  { value: "bg-red-500", label: "Vermelho", color: "bg-red-500" },
+  { value: "bg-blue-500", label: "Azul", color: "bg-blue-500" },
+  { value: "bg-green-500", label: "Verde", color: "bg-green-500" },
+  { value: "bg-yellow-500", label: "Amarelo", color: "bg-yellow-500" },
+  { value: "bg-purple-500", label: "Roxo", color: "bg-purple-500" },
+  { value: "bg-pink-500", label: "Rosa", color: "bg-pink-500" },
+  { value: "bg-orange-500", label: "Laranja", color: "bg-orange-500" },
+  { value: "bg-indigo-500", label: "Índigo", color: "bg-indigo-500" },
+  { value: "bg-teal-500", label: "Verde-azulado", color: "bg-teal-500" },
+  { value: "bg-gray-500", label: "Cinza", color: "bg-gray-500" },
 ]
 
 // Municipalities and Schools data based on the provided image
@@ -320,6 +325,14 @@ export default function CalendarioEscolar() {
   const [eventToDelete, setEventToDelete] = useState<any>(null)
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
 
+  // Event types state - starts empty, user creates their own types
+  const [eventTypes, setEventTypes] = useState([])
+  const [isEventTypeModalOpen, setIsEventTypeModalOpen] = useState(false)
+  const [eventTypeForm, setEventTypeForm] = useState({
+    name: "",
+    color: "",
+  })
+
   // State for municipality and school selection
   const [selectedMunicipality, setSelectedMunicipality] = useState<string>("")
   const [selectedSchool, setSelectedSchool] = useState<string>("")
@@ -582,6 +595,54 @@ export default function CalendarioEscolar() {
   const getEventForDate = (day: number) => {
     const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
     return schoolEvents[dateString] || []
+  }
+
+  // Save new event type
+  const saveEventType = () => {
+    if (!eventTypeForm.name || !eventTypeForm.color) {
+      alert("Por favor, preencha todos os campos.")
+      return
+    }
+
+    // Check if event type name already exists
+    const existingType = eventTypes.find(
+      (type) => type.label.toLowerCase() === eventTypeForm.name.toLowerCase()
+    )
+    if (existingType) {
+      alert("Já existe um tipo de evento com este nome.")
+      return
+    }
+
+    const newEventType = {
+      id: generateEventTypeId(),
+      value: eventTypeForm.name.toLowerCase().replace(/\s+/g, "_"),
+      label: eventTypeForm.name,
+      color: eventTypeForm.color,
+    }
+
+    setEventTypes([...eventTypes, newEventType])
+    setEventTypeForm({ name: "", color: "" })
+    setIsEventTypeModalOpen(false)
+    alert("Tipo de evento cadastrado com sucesso!")
+  }
+
+  // Delete event type (only if not in use)
+  const deleteEventType = (eventTypeId: string) => {
+    // Check if event type is being used
+    const isInUse = Object.values(schoolEvents).some((eventList) =>
+      eventList.some((event) => {
+        const eventType = eventTypes.find((et) => et.id === eventTypeId)
+        return eventType && event.type === eventType.value
+      })
+    )
+
+    if (isInUse) {
+      alert("Este tipo de evento está sendo usado em eventos cadastrados e não pode ser excluído.")
+      return
+    }
+
+    setEventTypes(eventTypes.filter((type) => type.id !== eventTypeId))
+    alert("Tipo de evento removido com sucesso!")
   }
 
   const getEventTypeColor = (type: string) => {
@@ -1074,12 +1135,12 @@ export default function CalendarioEscolar() {
                               <ChevronDown className="h-4 w-4 ml-2 transition-transform group-open:rotate-180" />
                             </summary>
                             <div className="absolute top-full left-0 mt-1 bg-white border border-red-200 rounded-lg shadow-lg z-50 min-w-[200px]">
-                              <a
-                                href="#"
-                                className="block px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-800 transition-colors border-b border-red-100"
+                              <button
+                                onClick={() => setIsEventTypeModalOpen(true)}
+                                className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-800 transition-colors border-b border-red-100"
                               >
                                 Cadastrar Tipos de Eventos
-                              </a>
+                              </button>
                               <a
                                 href="#"
                                 className="block px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-800 transition-colors"
@@ -1269,12 +1330,21 @@ export default function CalendarioEscolar() {
                         <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
                           <h4 className="text-red-800 text-sm font-medium mb-3">Legenda</h4>
                           <div className="space-y-2">
-                            {eventTypes.map((eventType) => (
-                              <div key={eventType.value} className="flex items-center space-x-2">
-                                <div className={`w-3 h-3 ${eventType.color} rounded`}></div>
-                                <span className="text-xs text-red-700">{eventType.label}</span>
+                            {eventTypes.length === 0 ? (
+                              <div className="text-center py-4">
+                                <p className="text-xs text-gray-500 mb-2">Nenhum tipo de evento cadastrado</p>
+                                <p className="text-xs text-red-600">
+                                  Cadastre tipos de eventos em "Cadastros" → "Cadastrar Tipos de Eventos"
+                                </p>
                               </div>
-                            ))}
+                            ) : (
+                              eventTypes.map((eventType) => (
+                                <div key={eventType.value} className="flex items-center space-x-2">
+                                  <div className={`w-3 h-3 ${eventType.color} rounded`}></div>
+                                  <span className="text-xs text-red-700">{eventType.label}</span>
+                                </div>
+                              ))
+                            )}
                             <div className="flex items-center space-x-2 pt-2 border-t border-gray-200">
                               <div className="w-3 h-3 bg-red-100 border border-red-300 rounded"></div>
                               <span className="text-xs text-red-700">Fins de Semana</span>
@@ -1414,6 +1484,58 @@ export default function CalendarioEscolar() {
                               title={`Desmarcar evento (ID: ${event.id})`}
                             >
                               Desmarcar
+                            </Button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Event Types List */}
+                <Card className="border-red-200 bg-white">
+                  <CardHeader>
+                    <CardTitle className="text-red-800 flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Plus className="h-5 w-5" />
+                        <span>Tipos de Eventos Cadastrados</span>
+                      </div>
+                      <Badge variant="secondary" className="bg-red-100 text-red-700">
+                        {eventTypes.length}
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      {eventTypes.length === 0 ? (
+                        <div className="text-center py-8">
+                          <Plus className="h-12 w-12 text-red-300 mx-auto mb-4" />
+                          <p className="text-red-600 font-medium mb-2">Nenhum tipo de evento cadastrado</p>
+                          <p className="text-red-500 text-sm">
+                            Clique em "Cadastros" → "Cadastrar Tipos de Eventos" para criar seu primeiro tipo
+                          </p>
+                        </div>
+                      ) : (
+                        eventTypes.map((eventType) => (
+                          <div
+                            key={eventType.id}
+                            className="flex items-center justify-between p-3 border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-4 h-4 ${eventType.color} rounded flex-shrink-0`}></div>
+                              <div className="min-w-0 flex-1">
+                                <div className="text-sm font-medium text-red-800 truncate">{eventType.label}</div>
+                                <div className="text-xs text-gray-500 mt-1">ID: {eventType.id}</div>
+                              </div>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteEventType(eventType.id)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-100 border-red-300 flex-shrink-0"
+                              title={`Remover tipo de evento (ID: ${eventType.id})`}
+                            >
+                              Remover
                             </Button>
                           </div>
                         ))
@@ -1899,17 +2021,25 @@ export default function CalendarioEscolar() {
               </Label>
               <Select value={eventForm.type} onValueChange={(value) => setEventForm({ ...eventForm, type: value })}>
                 <SelectTrigger className="border-red-200 focus:border-red-500">
-                  <SelectValue placeholder="Selecione o tipo" />
+                  <SelectValue placeholder={eventTypes.length === 0 ? "Nenhum tipo de evento cadastrado" : "Selecione o tipo"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {eventTypes.map((eventType) => (
-                    <SelectItem key={eventType.value} value={eventType.value}>
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-3 h-3 ${eventType.color} rounded`}></div>
-                        <span>{eventType.label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {eventTypes.length === 0 ? (
+                    <div className="px-4 py-2 text-sm text-gray-500 text-center">
+                      Nenhum tipo de evento cadastrado.
+                      <br />
+                      Clique em "Cadastros" → "Cadastrar Tipos de Eventos"
+                    </div>
+                  ) : (
+                    eventTypes.map((eventType) => (
+                      <SelectItem key={eventType.value} value={eventType.value}>
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-3 h-3 ${eventType.color} rounded`}></div>
+                          <span>{eventType.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -1971,6 +2101,84 @@ export default function CalendarioEscolar() {
             </Button>
             <Button onClick={saveEvent} className="bg-red-600 hover:bg-red-700 text-white">
               Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal for event type registration */}
+      <Dialog open={isEventTypeModalOpen} onOpenChange={setIsEventTypeModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-800 flex items-center space-x-2">
+              <Plus className="h-5 w-5" />
+              <span>Cadastrar Tipo de Evento</span>
+            </DialogTitle>
+            <p className="text-sm text-red-600">
+              Crie tipos de eventos personalizados com nome e cor
+            </p>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="eventTypeName" className="text-red-700">
+                Nome do Tipo de Evento *
+              </Label>
+              <Input
+                id="eventTypeName"
+                value={eventTypeForm.name}
+                onChange={(e) => setEventTypeForm({ ...eventTypeForm, name: e.target.value })}
+                placeholder="Ex: Feriado, Reunião, Avaliação..."
+                className="border-red-200 focus:border-red-500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="eventTypeColor" className="text-red-700">
+                Cor do Tipo de Evento *
+              </Label>
+              <Select value={eventTypeForm.color} onValueChange={(value) => setEventTypeForm({ ...eventTypeForm, color: value })}>
+                <SelectTrigger className="border-red-200 focus:border-red-500">
+                  <SelectValue placeholder="Selecione uma cor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableColors.map((color) => (
+                    <SelectItem key={color.value} value={color.value}>
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-4 h-4 ${color.color} rounded`}></div>
+                        <span>{color.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Preview */}
+            {eventTypeForm.name && eventTypeForm.color && (
+              <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <Label className="text-red-700 text-sm">Pré-visualização:</Label>
+                <div className="flex items-center space-x-2 mt-2">
+                  <div className={`w-4 h-4 ${eventTypeForm.color} rounded`}></div>
+                  <span className="text-sm font-medium text-red-800">{eventTypeForm.name}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="flex space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEventTypeModalOpen(false)
+                setEventTypeForm({ name: "", color: "" })
+              }}
+              className="border-red-300 text-red-600 hover:bg-red-50"
+            >
+              Cancelar
+            </Button>
+            <Button onClick={saveEventType} className="bg-red-600 hover:bg-red-700 text-white">
+              Cadastrar
             </Button>
           </DialogFooter>
         </DialogContent>
