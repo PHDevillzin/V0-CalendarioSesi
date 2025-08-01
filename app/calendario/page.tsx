@@ -334,7 +334,7 @@ export default function CalendarioEscolar() {
 
   // Academic year state
   const [academicYearStart, setAcademicYearStart] = useState<string>("")
-  const [academicYearEnd, setAcademicYearEnd = useState<string>("")
+  const [academicYearEnd, setAcademicYearEnd] = useState<string>("")
   const [savedAcademicYear, setSavedAcademicYear] = useState<{ start: string; end: string } | null>(null)
 
   // Add new state to control the configuration modal
