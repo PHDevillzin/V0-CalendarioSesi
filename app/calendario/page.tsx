@@ -625,6 +625,25 @@ export default function CalendarioEscolar() {
     return date >= recessStart && date <= recessEnd
   }
 
+  const isAcademicDay = (day: number) => {
+    if (!savedAcademicYear?.start || !savedAcademicYear?.end) return false
+    
+    const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+    const date = new Date(dateString)
+    const academicStart = new Date(savedAcademicYear.start)
+    const academicEnd = new Date(savedAcademicYear.end)
+    
+    // Check if it's within academic year period
+    const isInAcademicPeriod = date >= academicStart && date <= academicEnd
+    
+    // Check if it's not a weekend, holiday, or recess day
+    const isNotWeekend = !isWeekend(day)
+    const isNotHoliday = !isHoliday(day)
+    const isNotRecess = !isRecessDay(day)
+    
+    return isInAcademicPeriod && isNotWeekend && isNotHoliday && isNotRecess
+  }
+
   // Handle day click - opens modal
   const handleDayClick = (day: number) => {
     setSelectedDay(day)
@@ -1244,7 +1263,8 @@ export default function CalendarioEscolar() {
                         ${day ? "bg-white hover:bg-red-50" : "bg-gray-50"}
                         ${isToday(day) ? "ring-2 ring-red-500 bg-red-50" : ""}
                         ${day && (isWeekend(day) || isHoliday(day)) ? "bg-red-50" : ""}
-                        ${day && isRecessDay(day) ? "bg-orange-100" : ""}
+                        ${day && isRecessDay(day) ? "bg-orange-200" : ""}
+                        ${day && isAcademicDay(day) ? "bg-green-200" : ""}
                       `}
                             onClick={() => day && handleDayClick(day)}
                           >
@@ -1309,11 +1329,17 @@ export default function CalendarioEscolar() {
                             )}
                             <div className="flex items-center space-x-2 pt-2 border-t border-gray-200">
                               <div className="w-3 h-3 bg-red-100 border border-red-300 rounded"></div>
-                              <span className="text-xs text-red-700">Fins de Semana</span>
+                              <span className="text-xs text-red-700">Fins de Semana e Feriados</span>
                             </div>
+                            {savedAcademicYear && (
+                              <div className="flex items-center space-x-2">
+                                <div className="w-3 h-3 bg-green-200 border border-green-300 rounded"></div>
+                                <span className="text-xs text-red-700">Dias Letivos</span>
+                              </div>
+                            )}
                             {savedRecess && (
                               <div className="flex items-center space-x-2">
-                                <div className="w-3 h-3 bg-orange-100 border border-orange-300 rounded"></div>
+                                <div className="w-3 h-3 bg-orange-200 border border-orange-300 rounded"></div>
                                 <span className="text-xs text-red-700">Dias de Recesso</span>
                               </div>
                             )}
