@@ -305,6 +305,11 @@ const generateUniqueId = () => {
   return `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
+// Function to generate unique event type ID
+const generateEventTypeId = () => {
+  return `eventtype_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+}
+
 export default function CalendarioEscolar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string>("")
@@ -329,7 +334,7 @@ export default function CalendarioEscolar() {
 
   // Academic year state
   const [academicYearStart, setAcademicYearStart] = useState<string>("")
-  const [academicYearEnd, setAcademicYearEnd] = useState<string>("")
+  const [academicYearEnd, setAcademicYearEnd = useState<string>("")
   const [savedAcademicYear, setSavedAcademicYear] = useState<{ start: string; end: string } | null>(null)
 
   // Add new state to control the configuration modal
