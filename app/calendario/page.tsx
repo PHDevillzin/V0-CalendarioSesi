@@ -633,15 +633,8 @@ export default function CalendarioEscolar() {
     const academicStart = new Date(savedAcademicYear.start)
     const academicEnd = new Date(savedAcademicYear.end)
     
-    // Check if it's within academic year period
-    const isInAcademicPeriod = date >= academicStart && date <= academicEnd
-    
-    // Check if it's not a weekend, holiday, or recess day
-    const isNotWeekend = !isWeekend(day)
-    const isNotHoliday = !isHoliday(day)
-    const isNotRecess = !isRecessDay(day)
-    
-    return isInAcademicPeriod && isNotWeekend && isNotHoliday && isNotRecess
+    // Check if it's within academic year period - highlight ALL days in the period
+    return date >= academicStart && date <= academicEnd
   }
 
   // Handle day click - opens modal
@@ -1263,8 +1256,8 @@ export default function CalendarioEscolar() {
                         ${day ? "bg-white hover:bg-red-50" : "bg-gray-50"}
                         ${isToday(day) ? "ring-2 ring-red-500 bg-red-50" : ""}
                         ${day && (isWeekend(day) || isHoliday(day)) ? "bg-red-50" : ""}
-                        ${day && isRecessDay(day) ? "bg-orange-200" : ""}
-                        ${day && isAcademicDay(day) ? "bg-green-200" : ""}
+                        ${day && isRecessDay(day) ? "!bg-orange-100 hover:!bg-orange-200" : ""}
+                        ${day && isAcademicDay(day) ? "!bg-green-100 hover:!bg-green-200" : ""}
                       `}
                             onClick={() => day && handleDayClick(day)}
                           >
@@ -1275,8 +1268,9 @@ export default function CalendarioEscolar() {
                             text-sm font-medium mb-1
                             ${isToday(day) ? "text-red-700 font-bold" : ""}
                             ${isWeekend(day) || isHoliday(day) ? "text-red-600 font-semibold" : ""}
-                            ${isRecessDay(day) ? "text-orange-600 font-semibold" : ""}
-                            ${!isToday(day) && !isWeekend(day) && !isHoliday(day) && !isRecessDay(day) ? "text-gray-700" : ""}
+                            ${isRecessDay(day) ? "text-orange-700 font-semibold" : ""}
+                            ${isAcademicDay(day) && !isRecessDay(day) && !isHoliday(day) && !isWeekend(day) ? "text-green-700 font-semibold" : ""}
+                            ${!isToday(day) && !isWeekend(day) && !isHoliday(day) && !isRecessDay(day) && !isAcademicDay(day) ? "text-gray-700" : ""}
                           `}
                                 >
                                   {day}
@@ -1333,14 +1327,14 @@ export default function CalendarioEscolar() {
                             </div>
                             {savedAcademicYear && (
                               <div className="flex items-center space-x-2">
-                                <div className="w-3 h-3 bg-green-200 border border-green-300 rounded"></div>
-                                <span className="text-xs text-red-700">Dias Letivos</span>
+                                <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
+                                <span className="text-xs text-red-700">Período Letivo</span>
                               </div>
                             )}
                             {savedRecess && (
                               <div className="flex items-center space-x-2">
-                                <div className="w-3 h-3 bg-orange-200 border border-orange-300 rounded"></div>
-                                <span className="text-xs text-red-700">Dias de Recesso</span>
+                                <div className="w-3 h-3 bg-orange-100 border border-orange-300 rounded"></div>
+                                <span className="text-xs text-red-700">Período de Recesso</span>
                               </div>
                             )}
                           </div>
