@@ -353,15 +353,10 @@ export default function CalendarioEscolar() {
   // Add new state to control the configuration modal
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false)
 
-  // Add new state variables for semesters after the existing academic year state
-  const [firstSemesterStart, setFirstSemesterStart] = useState<string>("")
-  const [firstSemesterEnd, setFirstSemesterEnd] = useState<string>("")
-  const [secondSemesterStart, setSecondSemesterStart] = useState<string>("")
-  const [secondSemesterEnd, setSecondSemesterEnd] = useState<string>("")
-  const [savedSemesters, setSavedSemesters] = useState<{
-    first: { start: string; end: string } | null
-    second: { start: string; end: string } | null
-  } | null>(null)
+  // Recess period state
+  const [recessStart, setRecessStart] = useState<string>("")
+  const [recessEnd, setRecessEnd] = useState<string>("")
+  const [savedRecess, setSavedRecess] = useState<{ start: string; end: string } | null>(null)
 
   // Get available schools based on selected municipality
   const getAvailableSchools = () => {
@@ -400,8 +395,6 @@ export default function CalendarioEscolar() {
     return holidayCount
   }
 
-  // Add new functions after the existing countHolidaysInAcademicYear function
-
   // Count holidays within a specific period
   const countHolidaysInPeriod = (startDate: string, endDate: string) => {
     const start = new Date(startDate)
@@ -419,83 +412,39 @@ export default function CalendarioEscolar() {
     return holidayCount
   }
 
-  // Calculate academic days for a semester
-  const calculateSemesterDays = (startDate: string, endDate: string) => {
-    if (!startDate || !endDate) return 0
+  // Calculate recess days
+  const calculateRecessDays = () => {
+    if (!savedRecess?.start || !savedRecess?.end) return 0
 
-    const start = new Date(startDate)
-    const end = new Date(endDate)
+    const start = new Date(savedRecess.start)
+    const end = new Date(savedRecess.end)
     const timeDifference = end.getTime() - start.getTime()
     const totalDays = Math.ceil(timeDifference / (1000 * 3600 * 24)) + 1
 
-    if (totalDays <= 0) return 0
-
-    const holidays = countHolidaysInPeriod(startDate, endDate)
-    const academicDays = totalDays - holidays
-
-    return academicDays > 0 ? academicDays : 0
+    return totalDays > 0 ? totalDays : 0
   }
 
-  // Calculate recess period between semesters
-  const calculateRecessPeriod = () => {
-    if (!savedSemesters?.first?.end || !savedSemesters?.second?.start) {
-      return { days: 0, startDate: "", endDate: "" }
-    }
-
-    const firstEnd = new Date(savedSemesters.first.end)
-    const secondStart = new Date(savedSemesters.second.start)
-
-    // Add one day to first semester end to get recess start
-    const recessStart = new Date(firstEnd)
-    recessStart.setDate(recessStart.getDate() + 1)
-
-    // Subtract one day from second semester start to get recess end
-    const recessEnd = new Date(secondStart)
-    recessEnd.setDate(recessEnd.getDate() - 1)
-
-    const timeDifference = recessEnd.getTime() - recessStart.getTime()
-    const recessDays = Math.ceil(timeDifference / (1000 * 3600 * 24)) + 1
-
-    return {
-      days: recessDays > 0 ? recessDays : 0,
-      startDate: recessStart.toISOString().split("T")[0],
-      endDate: recessEnd.toISOString().split("T")[0],
-    }
-  }
-
-  // Save semesters function
-  const saveSemesters = () => {
-    if (!firstSemesterStart || !firstSemesterEnd || !secondSemesterStart || !secondSemesterEnd) {
-      alert("Por favor, preencha todas as datas dos semestres.")
+  // Save recess function
+  const saveRecess = () => {
+    if (!recessStart || !recessEnd) {
+      alert("Por favor, preencha todas as datas do recesso.")
       return
     }
 
-    const firstStart = new Date(firstSemesterStart)
-    const firstEnd = new Date(firstSemesterEnd)
-    const secondStart = new Date(secondSemesterStart)
-    const secondEnd = new Date(secondSemesterEnd)
+    const startDate = new Date(recessStart)
+    const endDate = new Date(recessEnd)
 
-    if (firstStart >= firstEnd) {
-      alert("A data de início do primeiro semestre deve ser anterior à data de fim.")
+    if (startDate >= endDate) {
+      alert("A data de início do recesso deve ser anterior à data de fim.")
       return
     }
 
-    if (secondStart >= secondEnd) {
-      alert("A data de início do segundo semestre deve ser anterior à data de fim.")
-      return
-    }
-
-    if (firstEnd >= secondStart) {
-      alert("O primeiro semestre deve terminar antes do início do segundo semestre.")
-      return
-    }
-
-    setSavedSemesters({
-      first: { start: firstSemesterStart, end: firstSemesterEnd },
-      second: { start: secondSemesterStart, end: secondSemesterEnd },
+    setSavedRecess({
+      start: recessStart,
+      end: recessEnd,
     })
 
-    alert("Semestres salvos com sucesso!")
+    alert("Recesso salvo com sucesso!")
     setIsConfigModalOpen(false) // Fechar o modal
   }
 
@@ -663,6 +612,17 @@ export default function CalendarioEscolar() {
   const isHoliday = (day: number) => {
     const events = getEventForDate(day)
     return events.some((event) => event.type === "feriado")
+  }
+
+  const isRecessDay = (day: number) => {
+    if (!savedRecess?.start || !savedRecess?.end) return false
+    
+    const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+    const date = new Date(dateString)
+    const recessStart = new Date(savedRecess.start)
+    const recessEnd = new Date(savedRecess.end)
+    
+    return date >= recessStart && date <= recessEnd
   }
 
   // Handle day click - opens modal
@@ -1284,6 +1244,7 @@ export default function CalendarioEscolar() {
                         ${day ? "bg-white hover:bg-red-50" : "bg-gray-50"}
                         ${isToday(day) ? "ring-2 ring-red-500 bg-red-50" : ""}
                         ${day && (isWeekend(day) || isHoliday(day)) ? "bg-red-50" : ""}
+                        ${day && isRecessDay(day) ? "bg-orange-100" : ""}
                       `}
                             onClick={() => day && handleDayClick(day)}
                           >
@@ -1293,7 +1254,9 @@ export default function CalendarioEscolar() {
                                   className={`
                             text-sm font-medium mb-1
                             ${isToday(day) ? "text-red-700 font-bold" : ""}
-                            ${isWeekend(day) || isHoliday(day) ? "text-red-600 font-semibold" : "text-gray-700"}
+                            ${isWeekend(day) || isHoliday(day) ? "text-red-600 font-semibold" : ""}
+                            ${isRecessDay(day) ? "text-orange-600 font-semibold" : ""}
+                            ${!isToday(day) && !isWeekend(day) && !isHoliday(day) && !isRecessDay(day) ? "text-gray-700" : ""}
                           `}
                                 >
                                   {day}
@@ -1348,6 +1311,12 @@ export default function CalendarioEscolar() {
                               <div className="w-3 h-3 bg-red-100 border border-red-300 rounded"></div>
                               <span className="text-xs text-red-700">Fins de Semana</span>
                             </div>
+                            {savedRecess && (
+                              <div className="flex items-center space-x-2">
+                                <div className="w-3 h-3 bg-orange-100 border border-orange-300 rounded"></div>
+                                <span className="text-xs text-red-700">Dias de Recesso</span>
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -1392,30 +1361,19 @@ export default function CalendarioEscolar() {
                               </Badge>
                             </div>
 
-                            {/* Semester totals - only show if semesters are configured */}
-                            {savedSemesters?.first && savedSemesters?.second && (
-                              <>
-                                <div className="border-t border-gray-200 pt-3 mt-3">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-2">
-                                      <CalendarIcon className="h-4 w-4 text-blue-600" />
-                                      <span className="text-xs text-red-700">1º Semestre</span>
-                                    </div>
-                                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                                      {calculateSemesterDays(savedSemesters.first.start, savedSemesters.first.end)} dias
-                                    </Badge>
+                            {/* Recess info - only show if recess is configured */}
+                            {savedRecess && (
+                              <div className="border-t border-gray-200 pt-3 mt-3">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-2">
+                                    <CalendarIcon className="h-4 w-4 text-orange-600" />
+                                    <span className="text-xs text-red-700">Dias de Recesso</span>
                                   </div>
-                                  <div className="flex items-center justify-between mt-2">
-                                    <div className="flex items-center space-x-2">
-                                      <CalendarIcon className="h-4 w-4 text-purple-600" />
-                                      <span className="text-xs text-red-700">2º Semestre</span>
-                                    </div>
-                                    <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                                      {calculateSemesterDays(savedSemesters.second.start, savedSemesters.second.end)} dias
-                                    </Badge>
-                                  </div>
+                                  <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                                    {calculateRecessDays()} dias
+                                  </Badge>
                                 </div>
-                              </>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -1555,7 +1513,7 @@ export default function CalendarioEscolar() {
                         {(() => {
                           let count = 0
                           if (savedAcademicYear) count++
-                          if (savedSemesters?.first && savedSemesters?.second) count += 2 // Semestres + Recesso
+                          if (savedRecess) count++
                           return count
                         })()}
                       </Badge>
@@ -1563,12 +1521,12 @@ export default function CalendarioEscolar() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 max-h-96 overflow-y-auto">
-                      {!savedAcademicYear && (!savedSemesters?.first || !savedSemesters?.second) ? (
+                      {!savedAcademicYear && !savedRecess ? (
                         <div className="text-center py-8">
                           <Settings className="h-12 w-12 text-red-300 mx-auto mb-4" />
                           <p className="text-red-600 font-medium mb-2">Nenhuma configuração salva</p>
                           <p className="text-red-500 text-sm">
-                            Clique no botão "Configurações" para definir o ano letivo e semestres
+                            Clique no botão "Configurações" para definir o ano letivo e recesso
                           </p>
                         </div>
                       ) : (
@@ -1605,72 +1563,19 @@ export default function CalendarioEscolar() {
                             </div>
                           )}
 
-                          {/* Semesters Configuration */}
-                          {savedSemesters?.first && savedSemesters?.second && (
-                            <div className="flex items-center justify-between p-3 border border-red-100 rounded-lg hover:bg-red-50 transition-colors">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-4 h-4 bg-blue-500 rounded flex-shrink-0"></div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="text-sm font-medium text-red-800">Configuração de Semestres</div>
-                                  <div className="text-xs text-red-600 space-y-1">
-                                    <div>
-                                      <strong>1º Semestre:</strong>{" "}
-                                      {new Date(savedSemesters.first.start).toLocaleDateString("pt-BR")} a{" "}
-                                      {new Date(savedSemesters.first.end).toLocaleDateString("pt-BR")} (
-                                      {calculateSemesterDays(savedSemesters.first.start, savedSemesters.first.end)} dias)
-                                    </div>
-                                    <div>
-                                      <strong>2º Semestre:</strong>{" "}
-                                      {new Date(savedSemesters.second.start).toLocaleDateString("pt-BR")} a{" "}
-                                      {new Date(savedSemesters.second.end).toLocaleDateString("pt-BR")} (
-                                      {calculateSemesterDays(savedSemesters.second.start, savedSemesters.second.end)}{" "}
-                                      dias)
-                                    </div>
-                                  </div>
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    Recesso: {(() => {
-                                      const recess = calculateRecessPeriod()
-                                      return `${recess.days} dias (${new Date(recess.startDate).toLocaleDateString("pt-BR")} a ${new Date(recess.endDate).toLocaleDateString("pt-BR")})`
-                                    })()}
-                                  </div>
-                                </div>
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setSavedSemesters(null)
-                                  setFirstSemesterStart("")
-                                  setFirstSemesterEnd("")
-                                  setSecondSemesterStart("")
-                                  setSecondSemesterEnd("")
-                                }}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-100 border-red-300 flex-shrink-0"
-                                title="Remover configuração dos semestres"
-                              >
-                                Remover
-                              </Button>
-                            </div>
-                          )}
-
-                          {/* Recess Period Configuration */}
-                          {savedSemesters?.first && savedSemesters?.second && (
+                          {/* Recess Configuration */}
+                          {savedRecess && (
                             <div className="flex items-center justify-between p-3 border border-red-100 rounded-lg hover:bg-red-50 transition-colors">
                               <div className="flex items-center space-x-3">
                                 <div className="w-4 h-4 bg-orange-500 rounded flex-shrink-0"></div>
                                 <div className="min-w-0 flex-1">
                                   <div className="text-sm font-medium text-red-800">Período de Recesso</div>
                                   <div className="text-xs text-red-600">
-                                    {(() => {
-                                      const recess = calculateRecessPeriod()
-                                      return `${new Date(recess.startDate).toLocaleDateString("pt-BR")} a ${new Date(recess.endDate).toLocaleDateString("pt-BR")}`
-                                    })()}
+                                    {new Date(savedRecess.start).toLocaleDateString("pt-BR")} a{" "}
+                                    {new Date(savedRecess.end).toLocaleDateString("pt-BR")}
                                   </div>
                                   <div className="text-xs text-gray-500 mt-1">
-                                    {(() => {
-                                      const recess = calculateRecessPeriod()
-                                      return `${recess.days} dias de recesso entre semestres`
-                                    })()}
+                                    {calculateRecessDays()} dias de recesso
                                   </div>
                                 </div>
                               </div>
@@ -1678,11 +1583,9 @@ export default function CalendarioEscolar() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                  setSavedSemesters(null)
-                                  setFirstSemesterStart("")
-                                  setFirstSemesterEnd("")
-                                  setSecondSemesterStart("")
-                                  setSecondSemesterEnd("")
+                                  setSavedRecess(null)
+                                  setRecessStart("")
+                                  setRecessEnd("")
                                 }}
                                 className="text-red-600 hover:text-red-700 hover:bg-red-100 border-red-300 flex-shrink-0"
                                 title="Remover configuração do recesso"
@@ -1711,9 +1614,9 @@ export default function CalendarioEscolar() {
           <DialogHeader>
             <DialogTitle className="text-red-800 flex items-center space-x-2">
               <CalendarIcon className="h-5 w-5" />
-              <span>Configurações - Datas fixas e recorrentes</span>
+              <span>Configurações - Ano letivo e recesso</span>
             </DialogTitle>
-            <div className="text-red-600 text-sm">Configuração de períodos e datas fixas do sistema educacional</div>
+            <div className="text-red-600 text-sm">Configuração do ano letivo e período de recesso</div>
           </DialogHeader>
 
           <div className="py-4">
@@ -1789,180 +1692,72 @@ export default function CalendarioEscolar() {
                 )}
               </div>
 
-              {/* First Semester Subsection */}
+              {/* Recess Period Subsection */}
               <div className="border-b border-red-100 pb-6">
                 <h4 className="text-red-800 font-medium mb-4 flex items-center space-x-2">
                   <CalendarIcon className="h-4 w-4" />
-                  <span>Primeiro semestre</span>
+                  <span>Período de recesso</span>
                 </h4>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                   <div className="space-y-2">
-                    <Label htmlFor="firstSemesterStart" className="text-red-700 text-sm">
+                    <Label htmlFor="recessStart" className="text-red-700 text-sm">
                       Data de início *
                     </Label>
                     <Input
-                      id="firstSemesterStart"
+                      id="recessStart"
                       type="date"
-                      value={firstSemesterStart}
-                      onChange={(e) => setFirstSemesterStart(e.target.value)}
+                      value={recessStart}
+                      onChange={(e) => setRecessStart(e.target.value)}
                       className="border-red-200 focus:border-red-500"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="firstSemesterEnd" className="text-red-700 text-sm">
+                    <Label htmlFor="recessEnd" className="text-red-700 text-sm">
                       Data de fim *
                     </Label>
                     <Input
-                      id="firstSemesterEnd"
+                      id="recessEnd"
                       type="date"
-                      value={firstSemesterEnd}
-                      onChange={(e) => setFirstSemesterEnd(e.target.value)}
+                      value={recessEnd}
+                      onChange={(e) => setRecessEnd(e.target.value)}
                       className="border-red-200 focus:border-red-500"
                     />
                   </div>
+
+                  <Button onClick={saveRecess} className="bg-red-600 hover:bg-red-700 text-white">
+                    Salvar Recesso
+                  </Button>
                 </div>
 
-                {savedSemesters?.first && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                {savedRecess && (
+                  <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                     <div className="flex items-center space-x-2 mb-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-blue-800 font-medium text-sm">Primeiro semestre configurado</span>
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <span className="text-orange-800 font-medium text-sm">Recesso configurado</span>
                     </div>
-                    <div className="text-blue-700 text-sm space-y-1">
+                    <div className="text-orange-700 text-sm space-y-1">
                       <div>
-                        <strong>Período:</strong> {new Date(savedSemesters.first.start).toLocaleDateString("pt-BR")} a{" "}
-                        {new Date(savedSemesters.first.end).toLocaleDateString("pt-BR")}
+                        <strong>Início:</strong> {new Date(savedRecess.start).toLocaleDateString("pt-BR")}
                       </div>
                       <div>
-                        <strong>Total de dias:</strong> {(() => {
-                          const start = new Date(savedSemesters.first.start)
-                          const end = new Date(savedSemesters.first.end)
-                          const timeDifference = end.getTime() - start.getTime()
-                          return Math.ceil(timeDifference / (1000 * 3600 * 24)) + 1
-                        })()} dias
+                        <strong>Fim:</strong> {new Date(savedRecess.end).toLocaleDateString("pt-BR")}
                       </div>
-                      <div>
-                        <strong>Feriados:</strong>{" "}
-                        {countHolidaysInPeriod(savedSemesters.first.start, savedSemesters.first.end)} dias
-                      </div>
-                      <div className="pt-1 border-t border-blue-300">
-                        <strong>Dias letivos:</strong>{" "}
-                        {calculateSemesterDays(savedSemesters.first.start, savedSemesters.first.end)} dias
+                      <div className="pt-1 border-t border-orange-300">
+                        <strong>Total de dias:</strong> {calculateRecessDays()} dias
                       </div>
                     </div>
                   </div>
                 )}
               </div>
-
-              {/* Second Semester Subsection */}
-              <div className="border-b border-red-100 pb-6">
-                <h4 className="text-red-800 font-medium mb-4 flex items-center space-x-2">
-                  <CalendarIcon className="h-4 w-4" />
-                  <span>Segundo semestre</span>
-                </h4>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="secondSemesterStart" className="text-red-700 text-sm">
-                      Data de início *
-                    </Label>
-                    <Input
-                      id="secondSemesterStart"
-                      type="date"
-                      value={secondSemesterStart}
-                      onChange={(e) => setSecondSemesterStart(e.target.value)}
-                      className="border-red-200 focus:border-red-500"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="secondSemesterEnd" className="text-red-700 text-sm">
-                      Data de fim *
-                    </Label>
-                    <Input
-                      id="secondSemesterEnd"
-                      type="date"
-                      value={secondSemesterEnd}
-                      onChange={(e) => setSecondSemesterEnd(e.target.value)}
-                      className="border-red-200 focus:border-red-500"
-                    />
-                  </div>
-                </div>
-
-                {savedSemesters?.second && (
-                  <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      <span className="text-purple-800 font-medium text-sm">Segundo semestre configurado</span>
-                    </div>
-                    <div className="text-purple-700 text-sm space-y-1">
-                      <div>
-                        <strong>Período:</strong> {new Date(savedSemesters.second.start).toLocaleDateString("pt-BR")} a{" "}
-                        {new Date(savedSemesters.second.end).toLocaleDateString("pt-BR")}
-                      </div>
-                      <div>
-                        <strong>Total de dias:</strong> {(() => {
-                          const start = new Date(savedSemesters.second.start)
-                          const end = new Date(savedSemesters.second.end)
-                          const timeDifference = end.getTime() - start.getTime()
-                          return Math.ceil(timeDifference / (1000 * 3600 * 24)) + 1
-                        })()} dias
-                      </div>
-                      <div>
-                        <strong>Feriados:</strong>{" "}
-                        {countHolidaysInPeriod(savedSemesters.second.start, savedSemesters.second.end)} dias
-                      </div>
-                      <div className="pt-1 border-t border-purple-300">
-                        <strong>Dias letivos:</strong>{" "}
-                        {calculateSemesterDays(savedSemesters.second.start, savedSemesters.second.end)} dias
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Save Semesters Button */}
-              <div className="flex justify-center">
-                <Button onClick={saveSemesters} className="bg-red-600 hover:bg-red-700 text-white px-8">
-                  Salvar Configuração dos Semestres
-                </Button>
-              </div>
-
-              {/* Recess Period Display */}
-              {savedSemesters?.first && savedSemesters?.second && (
-                <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    <span className="text-orange-800 font-medium text-sm">Período de Recesso</span>
-                  </div>
-                  <div className="text-orange-700 text-sm space-y-1">
-                    {(() => {
-                      const recess = calculateRecessPeriod()
-                      return (
-                        <>
-                          <div>
-                            <strong>Período:</strong> {new Date(recess.startDate).toLocaleDateString("pt-BR")} a{" "}
-                            {new Date(recess.endDate).toLocaleDateString("pt-BR")}
-                          </div>
-                          <div>
-                            <strong>Duração:</strong> {recess.days} dias
-                          </div>
-                        </>
-                      )
-                    })()}
-                  </div>
-                </div>
-              )}
 
               {/* Instructions */}
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>💡 Dica:</strong> Configure o período do ano letivo e dos semestres para calcular
-                  automaticamente os dias letivos disponíveis. Os feriados cadastrados no calendário são automaticamente
-                  subtraídos do total de dias letivos. O período de recesso é calculado automaticamente entre os
-                  semestres.
+                  <strong>💡 Dica:</strong> Configure o período do ano letivo e o recesso para visualizar no calendário
+                  os dias letivos e os dias de recesso. Os feriados cadastrados são automaticamente subtraídos do total 
+                  de dias letivos. Os dias de recesso aparecem destacados em laranja no calendário.
                 </p>
               </div>
             </div>
