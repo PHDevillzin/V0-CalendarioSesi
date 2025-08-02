@@ -315,6 +315,38 @@ const generateEventTypeId = () => {
   return `eventtype_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
+// Pre-registered event types that require start/end date configuration
+const preRegisteredEventTypes = [
+  {
+    id: "pre_academic_start",
+    value: "inicio_ano_letivo",
+    label: "Início de ano letivo",
+    color: "bg-green-600",
+    requiresDateRange: true,
+  },
+  {
+    id: "pre_academic_end", 
+    value: "fim_ano_letivo",
+    label: "Fim de Ano letivo",
+    color: "bg-red-600",
+    requiresDateRange: true,
+  },
+  {
+    id: "pre_recess_start",
+    value: "inicio_recesso",
+    label: "Início de recesso", 
+    color: "bg-orange-600",
+    requiresDateRange: true,
+  },
+  {
+    id: "pre_recess_end",
+    value: "fim_recesso",
+    label: "Fim de recesso",
+    color: "bg-blue-600", 
+    requiresDateRange: true,
+  },
+]
+
 export default function CalendarioEscolar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string>("")
@@ -325,8 +357,8 @@ export default function CalendarioEscolar() {
   const [eventToDelete, setEventToDelete] = useState<any>(null)
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
 
-  // Event types state - starts empty, user creates their own types
-  const [eventTypes, setEventTypes] = useState([])
+  // Event types state - starts with pre-registered types
+  const [eventTypes, setEventTypes] = useState([...preRegisteredEventTypes])
   const [isEventTypeModalOpen, setIsEventTypeModalOpen] = useState(false)
   const [eventTypeForm, setEventTypeForm] = useState({
     name: "",
@@ -352,6 +384,12 @@ export default function CalendarioEscolar() {
 
   // Add new state to control the configuration modal
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false)
+
+  // Date range event modal state
+  const [isDateRangeModalOpen, setIsDateRangeModalOpen] = useState(false)
+  const [dateRangeEventType, setDateRangeEventType] = useState<string>("")
+  const [dateRangeStart, setDateRangeStart] = useState<string>("")
+  const [dateRangeEnd, setDateRangeEnd] = useState<string>("")
 
   // Recess period state
   const [recessStart, setRecessStart] = useState<string>("")
@@ -574,12 +612,19 @@ export default function CalendarioEscolar() {
     alert("Tipo de evento cadastrado com sucesso!")
   }
 
-  // Delete event type (only if not in use)
+  // Delete event type (only if not in use and not pre-registered)
   const deleteEventType = (eventTypeId: string) => {
+    const eventType = eventTypes.find(et => et.id === eventTypeId)
+    
+    // Prevent deletion of pre-registered types
+    if (eventType && preRegisteredEventTypes.some(pre => pre.id === eventTypeId)) {
+      alert("Este tipo de evento é pré-cadastrado do sistema e não pode ser removido.")
+      return
+    }
+
     // Check if event type is being used
     const isInUse = Object.values(schoolEvents).some((eventList) =>
       eventList.some((event) => {
-        const eventType = eventTypes.find((et) => et.id === eventTypeId)
         return eventType && event.type === eventType.value
       })
     )
@@ -646,10 +691,82 @@ export default function CalendarioEscolar() {
     setIsModalOpen(true)
   }
 
+  // Save date range event
+  const saveDateRangeEvent = () => {
+    if (!dateRangeStart || !dateRangeEnd || !dateRangeEventType) {
+      alert("Por favor, preencha todas as datas.")
+      return
+    }
+
+    const startDate = new Date(dateRangeStart)
+    const endDate = new Date(dateRangeEnd)
+
+    if (startDate >= endDate) {
+      alert("A data de início deve ser anterior à data de fim.")
+      return
+    }
+
+    const newEvents = { ...schoolEvents }
+    const eventTypeData = eventTypes.find(et => et.value === dateRangeEventType)
+    
+    if (!eventTypeData) return
+
+    // Create events for start and end dates
+    const uniqueIdStart = generateUniqueId()
+    const uniqueIdEnd = generateUniqueId()
+
+    // Start event
+    if (!newEvents[dateRangeStart]) {
+      newEvents[dateRangeStart] = []
+    }
+    newEvents[dateRangeStart].push({
+      id: uniqueIdStart,
+      title: eventTypeData.label,
+      type: dateRangeEventType,
+      displayDate: dateRangeStart,
+      createdAt: new Date().toISOString(),
+      isRecurring: false,
+      isDateRangeEvent: true,
+      dateRange: { start: dateRangeStart, end: dateRangeEnd }
+    })
+
+    // End event
+    if (!newEvents[dateRangeEnd]) {
+      newEvents[dateRangeEnd] = []
+    }
+    newEvents[dateRangeEnd].push({
+      id: uniqueIdEnd,
+      title: eventTypeData.label,
+      type: dateRangeEventType,
+      displayDate: dateRangeEnd,
+      createdAt: new Date().toISOString(),
+      isRecurring: false,
+      isDateRangeEvent: true,
+      dateRange: { start: dateRangeStart, end: dateRangeEnd }
+    })
+
+    setSchoolEvents(newEvents)
+    setIsDateRangeModalOpen(false)
+    setDateRangeStart("")
+    setDateRangeEnd("")
+    setDateRangeEventType("")
+    
+    alert(`Evento de período cadastrado com sucesso!`)
+  }
+
   // Save event from modal
   const saveEvent = () => {
     if (!eventForm.title || !eventForm.type || !selectedDay) {
       alert("Por favor, preencha todos os campos.")
+      return
+    }
+
+    // Check if this is a date range event type
+    const eventTypeData = eventTypes.find(et => et.value === eventForm.type)
+    if (eventTypeData?.requiresDateRange) {
+      setDateRangeEventType(eventForm.type)
+      setIsModalOpen(false)
+      setIsDateRangeModalOpen(true)
       return
     }
 
@@ -1493,7 +1610,19 @@ export default function CalendarioEscolar() {
                             <div className="flex items-center space-x-3">
                               <div className={`w-4 h-4 ${eventType.color} rounded flex-shrink-0`}></div>
                               <div className="min-w-0 flex-1">
-                                <div className="text-sm font-medium text-red-800 truncate">{eventType.label}</div>
+                                <div className="text-sm font-medium text-red-800 truncate flex items-center space-x-2">
+                                  <span>{eventType.label}</span>
+                                  {preRegisteredEventTypes.some(pre => pre.id === eventType.id) && (
+                                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
+                                      Sistema
+                                    </Badge>
+                                  )}
+                                  {eventType.requiresDateRange && (
+                                    <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs">
+                                      Período
+                                    </Badge>
+                                  )}
+                                </div>
                                 <div className="text-xs text-gray-500 mt-1">ID: {eventType.id}</div>
                               </div>
                             </div>
@@ -1503,8 +1632,9 @@ export default function CalendarioEscolar() {
                               onClick={() => deleteEventType(eventType.id)}
                               className="text-red-600 hover:text-red-700 hover:bg-red-100 border-red-300 flex-shrink-0"
                               title={`Remover tipo de evento (ID: ${eventType.id})`}
+                              disabled={preRegisteredEventTypes.some(pre => pre.id === eventType.id)}
                             >
-                              Remover
+                              {preRegisteredEventTypes.some(pre => pre.id === eventType.id) ? "Sistema" : "Remover"}
                             </Button>
                           </div>
                         ))
@@ -1983,47 +2113,87 @@ export default function CalendarioEscolar() {
 
             {/* List of Registered Event Types */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-red-800 font-medium">Tipos de Eventos Cadastrados</h4>
-                <Badge variant="secondary" className="bg-red-100 text-red-700">
-                  {eventTypes.length}
-                </Badge>
-              </div>
-
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                {eventTypes.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Plus className="h-8 w-8 text-red-300 mx-auto mb-2" />
-                    <p className="text-red-600 font-medium mb-1">Nenhum tipo de evento cadastrado</p>
-                    <p className="text-red-500 text-sm">
-                      Preencha o formulário acima para criar seu primeiro tipo
-                    </p>
-                  </div>
-                ) : (
-                  eventTypes.map((eventType) => (
+              {/* Pre-registered types */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-red-800 font-medium">Tipos do Sistema</h4>
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                    {preRegisteredEventTypes.length}
+                  </Badge>
+                </div>
+                
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {preRegisteredEventTypes.map((eventType) => (
                     <div
                       key={eventType.id}
-                      className="flex items-center justify-between p-3 border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
+                      className="flex items-center justify-between p-3 border border-blue-100 rounded-lg bg-blue-50"
                     >
                       <div className="flex items-center space-x-3">
                         <div className={`w-4 h-4 ${eventType.color} rounded flex-shrink-0`}></div>
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-medium text-red-800 truncate">{eventType.label}</div>
-                          <div className="text-xs text-gray-500 mt-1">ID: {eventType.id}</div>
+                          <div className="text-sm font-medium text-blue-800 truncate flex items-center space-x-2">
+                            <span>{eventType.label}</span>
+                            <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs">
+                              Período
+                            </Badge>
+                          </div>
+                          <div className="text-xs text-blue-600 mt-1">Pré-cadastrado</div>
                         </div>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => deleteEventType(eventType.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-100 border-red-300 flex-shrink-0"
-                        title={`Remover tipo de evento (ID: ${eventType.id})`}
-                      >
-                        Remover
-                      </Button>
+                      <Badge variant="secondary" className="bg-blue-200 text-blue-800 text-xs">
+                        Sistema
+                      </Badge>
                     </div>
-                  ))
-                )}
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom types */}
+              <div className="space-y-2 border-t border-red-100 pt-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-red-800 font-medium">Tipos Personalizados</h4>
+                  <Badge variant="secondary" className="bg-red-100 text-red-700">
+                    {eventTypes.filter(et => !preRegisteredEventTypes.some(pre => pre.id === et.id)).length}
+                  </Badge>
+                </div>
+
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {eventTypes.filter(et => !preRegisteredEventTypes.some(pre => pre.id === et.id)).length === 0 ? (
+                    <div className="text-center py-8">
+                      <Plus className="h-8 w-8 text-red-300 mx-auto mb-2" />
+                      <p className="text-red-600 font-medium mb-1">Nenhum tipo personalizado cadastrado</p>
+                      <p className="text-red-500 text-sm">
+                        Preencha o formulário acima para criar seu primeiro tipo
+                      </p>
+                    </div>
+                  ) : (
+                    eventTypes
+                      .filter(et => !preRegisteredEventTypes.some(pre => pre.id === et.id))
+                      .map((eventType) => (
+                      <div
+                        key={eventType.id}
+                        className="flex items-center justify-between p-3 border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-4 h-4 ${eventType.color} rounded flex-shrink-0`}></div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium text-red-800 truncate">{eventType.label}</div>
+                            <div className="text-xs text-gray-500 mt-1">ID: {eventType.id}</div>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => deleteEventType(eventType.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-100 border-red-300 flex-shrink-0"
+                          title={`Remover tipo de evento (ID: ${eventType.id})`}
+                        >
+                          Remover
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -2038,6 +2208,71 @@ export default function CalendarioEscolar() {
               className="border-red-300 text-red-600 hover:bg-red-50"
             >
               Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal for date range events */}
+      <Dialog open={isDateRangeModalOpen} onOpenChange={setIsDateRangeModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-800 flex items-center space-x-2">
+              <CalendarIcon className="h-5 w-5" />
+              <span>Configurar Período</span>
+            </DialogTitle>
+            <p className="text-sm text-red-600">
+              Configure as datas de início e fim para: {eventTypes.find(et => et.value === dateRangeEventType)?.label}
+            </p>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="dateRangeStart" className="text-red-700">
+                Data de início *
+              </Label>
+              <Input
+                id="dateRangeStart"
+                type="date"
+                value={dateRangeStart}
+                onChange={(e) => setDateRangeStart(e.target.value)}
+                className="border-red-200 focus:border-red-500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dateRangeEnd" className="text-red-700">
+                Data de fim *
+              </Label>
+              <Input
+                id="dateRangeEnd"
+                type="date"
+                value={dateRangeEnd}
+                onChange={(e) => setDateRangeEnd(e.target.value)}
+                className="border-red-200 focus:border-red-500"
+              />
+            </div>
+
+            <div className="text-xs text-gray-500 bg-blue-50 p-2 rounded">
+              <strong>ℹ️ Informação:</strong> Serão criados eventos nas datas de início e fim do período configurado.
+            </div>
+          </div>
+
+          <DialogFooter className="flex space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDateRangeModalOpen(false)
+                setDateRangeStart("")
+                setDateRangeEnd("")
+                setDateRangeEventType("")
+              }}
+              className="border-red-300 text-red-600 hover:bg-red-50"
+            >
+              Cancelar
+            </Button>
+            <Button onClick={saveDateRangeEvent} className="bg-red-600 hover:bg-red-700 text-white">
+              Salvar Período
             </Button>
           </DialogFooter>
         </DialogContent>
