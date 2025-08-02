@@ -616,23 +616,23 @@ export default function CalendarioEscolar() {
 
   const isRecessDay = (day: number) => {
     if (!savedRecess?.start || !savedRecess?.end) return false
-    
+
     const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
     const date = new Date(dateString)
     const recessStart = new Date(savedRecess.start)
     const recessEnd = new Date(savedRecess.end)
-    
+
     return date >= recessStart && date <= recessEnd
   }
 
   const isAcademicDay = (day: number) => {
     if (!savedAcademicYear?.start || !savedAcademicYear?.end) return false
-    
+
     const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
     const date = new Date(dateString)
     const academicStart = new Date(savedAcademicYear.start)
     const academicEnd = new Date(savedAcademicYear.end)
-    
+
     // Check if it's within academic year period - highlight ALL days in the period
     return date >= academicStart && date <= academicEnd
   }
@@ -1112,23 +1112,15 @@ export default function CalendarioEscolar() {
                               >
                                 Cadastrar Tipos de Eventos
                               </button>
-                              <a
-                                href="#"
-                                className="block px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-800 transition-colors"
+                              <button
+                                onClick={() => setIsConfigModalOpen(true)}
+                                className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-800 transition-colors"
                               >
-                                Cadastrar Eventos
-                              </a>
+                                Configurações
+                              </button>
                             </div>
                           </details>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsConfigModalOpen(true)}
-                          className="text-white hover:bg-red-700 hover:text-white px-4 py-2"
-                        >
-                          Configurações
-                        </Button>
                       </div>
                     </div>
 
