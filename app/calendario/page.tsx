@@ -462,6 +462,19 @@ export default function CalendarioEscolar() {
     // Subtract holidays from total days
     const holidays = countHolidaysInAcademicYear()
     
+    // Count bridge days (emenda) within academic year period
+    let bridgeDaysInAcademicYear = 0
+    Object.entries(schoolEvents).forEach(([dateString, eventList]) => {
+      const eventDate = new Date(dateString)
+      
+      // Check if the event date is within the academic year period
+      if (eventDate >= startDate && eventDate <= endDate) {
+        // Count bridge days (emenda type events)
+        const bridgeDays = eventList.filter((event) => event.type === "emenda")
+        bridgeDaysInAcademicYear += bridgeDays.length
+      }
+    })
+    
     // Subtract recess days if recess period overlaps with academic year
     let recessDaysInAcademicYear = 0
     if (savedRecess?.start && savedRecess?.end) {
@@ -478,7 +491,7 @@ export default function CalendarioEscolar() {
       }
     }
     
-    const academicDays = totalDays - holidays - recessDaysInAcademicYear
+    const academicDays = totalDays - holidays - bridgeDaysInAcademicYear - recessDaysInAcademicYear
 
     return academicDays > 0 ? academicDays : 0
   }
