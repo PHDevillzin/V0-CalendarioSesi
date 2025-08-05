@@ -461,7 +461,24 @@ export default function CalendarioEscolar() {
 
     // Subtract holidays from total days
     const holidays = countHolidaysInAcademicYear()
-    const academicDays = totalDays - holidays
+    
+    // Subtract recess days if recess period overlaps with academic year
+    let recessDaysInAcademicYear = 0
+    if (savedRecess?.start && savedRecess?.end) {
+      const recessStart = new Date(savedRecess.start)
+      const recessEnd = new Date(savedRecess.end)
+      
+      // Check if recess period overlaps with academic year
+      const overlapStart = new Date(Math.max(startDate.getTime(), recessStart.getTime()))
+      const overlapEnd = new Date(Math.min(endDate.getTime(), recessEnd.getTime()))
+      
+      if (overlapStart <= overlapEnd) {
+        const overlapDays = Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 3600 * 24)) + 1
+        recessDaysInAcademicYear = overlapDays > 0 ? overlapDays : 0
+      }
+    }
+    
+    const academicDays = totalDays - holidays - recessDaysInAcademicYear
 
     return academicDays > 0 ? academicDays : 0
   }
@@ -816,6 +833,59 @@ export default function CalendarioEscolar() {
 
   const addDayToDate = (dateString: string) => {
     return dateString
+  }
+
+  // Calculate monthly statistics for current displayed month
+  const calculateMonthlyStats = () => {
+    const firstDayOfMonth = new Date(year, month, 1)
+    const lastDayOfMonth = new Date(year, month + 1, 0)
+    
+    let academicDays = 0
+    let holidays = 0
+    let bridgeDays = 0
+    let weekends = 0
+    
+    // Count each day of the month
+    for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
+      const currentDate = new Date(year, month, day)
+      const dayOfWeek = currentDate.getDay()
+      
+      // Count weekends
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        weekends++
+        continue
+      }
+      
+      // Check if day has holiday events
+      const events = getEventForDate(day)
+      const hasHoliday = events.some((event) => event.type === "feriado")
+      
+      if (hasHoliday) {
+        holidays++
+        continue
+      }
+      
+      // Check if it's a bridge day (weekday next to weekend/holiday that's not academic)
+      const prevDay = new Date(year, month, day - 1)
+      const nextDay = new Date(year, month, day + 1)
+      const prevEvents = day > 1 ? getEventForDate(day - 1) : []
+      const nextEvents = day < lastDayOfMonth.getDate() ? getEventForDate(day + 1) : []
+      
+      const prevIsHolidayOrWeekend = prevDay.getDay() === 0 || prevDay.getDay() === 6 || 
+        prevEvents.some((event) => event.type === "feriado")
+      const nextIsHolidayOrWeekend = nextDay.getDay() === 0 || nextDay.getDay() === 6 || 
+        nextEvents.some((event) => event.type === "feriado")
+      
+      // Count as academic day if it's within academic year and not in recess
+      if (isAcademicDay(day) && !isRecessDay(day)) {
+        academicDays++
+      } else if ((prevIsHolidayOrWeekend || nextIsHolidayOrWeekend) && !isAcademicDay(day)) {
+        // This could be considered a bridge day
+        bridgeDays++
+      }
+    }
+    
+    return { academicDays, holidays, bridgeDays, weekends }
   }
 
   return (
@@ -1290,6 +1360,39 @@ export default function CalendarioEscolar() {
                             )}
                           </div>
                         ))}
+                      </div>
+
+                      {/* Monthly Summary */}
+                      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h4 className="text-blue-800 text-sm font-medium mb-3">
+                          Resumo de {monthNames[month]} {year}
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-4 text-sm">
+                          <div className="flex items-center space-x-1">
+                            <div className="w-3 h-3 bg-green-500 rounded"></div>
+                            <span className="text-blue-700">
+                              <strong>{calculateMonthlyStats().academicDays}</strong> dias letivos
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <div className="w-3 h-3 bg-red-500 rounded"></div>
+                            <span className="text-blue-700">
+                              <strong>{calculateMonthlyStats().holidays}</strong> feriados
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <div className="w-3 h-3 bg-yellow-500 rounded"></div>
+                            <span className="text-blue-700">
+                              <strong>{calculateMonthlyStats().bridgeDays}</strong> emendas
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <div className="w-3 h-3 bg-gray-400 rounded"></div>
+                            <span className="text-blue-700">
+                              <strong>{calculateMonthlyStats().weekends}</strong> fins de semana
+                            </span>
+                          </div>
+                        </div>
                       </div>
 
                       {/* Tooltips - Legenda e Resumo Escolar */}
