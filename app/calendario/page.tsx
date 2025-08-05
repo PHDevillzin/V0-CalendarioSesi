@@ -856,8 +856,10 @@ export default function CalendarioEscolar() {
         continue
       }
       
-      // Check if day has holiday events
+      // Check if day has events
       const events = getEventForDate(day)
+      
+      // Check if day has holiday events
       const hasHoliday = events.some((event) => event.type === "feriado")
       
       if (hasHoliday) {
@@ -865,23 +867,17 @@ export default function CalendarioEscolar() {
         continue
       }
       
-      // Check if it's a bridge day (weekday next to weekend/holiday that's not academic)
-      const prevDay = new Date(year, month, day - 1)
-      const nextDay = new Date(year, month, day + 1)
-      const prevEvents = day > 1 ? getEventForDate(day - 1) : []
-      const nextEvents = day < lastDayOfMonth.getDate() ? getEventForDate(day + 1) : []
+      // Check if day has bridge day events (only events specifically marked as "emenda")
+      const hasBridgeEvent = events.some((event) => event.type === "emenda")
       
-      const prevIsHolidayOrWeekend = prevDay.getDay() === 0 || prevDay.getDay() === 6 || 
-        prevEvents.some((event) => event.type === "feriado")
-      const nextIsHolidayOrWeekend = nextDay.getDay() === 0 || nextDay.getDay() === 6 || 
-        nextEvents.some((event) => event.type === "feriado")
+      if (hasBridgeEvent) {
+        bridgeDays++
+        continue
+      }
       
       // Count as academic day if it's within academic year and not in recess
       if (isAcademicDay(day) && !isRecessDay(day)) {
         academicDays++
-      } else if ((prevIsHolidayOrWeekend || nextIsHolidayOrWeekend) && !isAcademicDay(day)) {
-        // This could be considered a bridge day
-        bridgeDays++
       }
     }
     
@@ -1389,7 +1385,7 @@ export default function CalendarioEscolar() {
                           <div className="flex items-center space-x-1">
                             <div className="w-3 h-3 bg-gray-400 rounded"></div>
                             <span className="text-blue-700">
-                              <strong>{calculateMonthlyStats().weekends}</strong> fins de semana
+                              <strong>{calculateMonthlyStats().weekends}</strong> dias de fim de semana
                             </span>
                           </div>
                         </div>
