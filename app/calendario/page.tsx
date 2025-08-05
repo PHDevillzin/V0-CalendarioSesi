@@ -1298,22 +1298,28 @@ export default function CalendarioEscolar() {
                         <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
                           <h4 className="text-red-800 text-sm font-medium mb-3">Legenda</h4>
                           <div className="space-y-2">
+                            {/* Event Types */}
                             {eventTypes.length === 0 ? (
-                              <div className="text-center py-4">
-                                <p className="text-xs text-gray-500 mb-2">Nenhum tipo de evento cadastrado</p>
+                              <div className="text-center py-2">
+                                <p className="text-xs text-gray-500 mb-1">Nenhum tipo de evento cadastrado</p>
                                 <p className="text-xs text-red-600">
-                                  Cadastre tipos de eventos em "Cadastros" → "Cadastrar Tipos de Eventos"
+                                  Cadastre em "Cadastros" → "Cadastrar Tipos de Eventos"
                                 </p>
                               </div>
                             ) : (
-                              eventTypes.map((eventType) => (
-                                <div key={eventType.value} className="flex items-center space-x-2">
-                                  <div className={`w-3 h-3 ${eventType.color} rounded`}></div>
-                                  <span className="text-xs text-red-700">{eventType.label}</span>
-                                </div>
-                              ))
+                              <>
+                                {eventTypes.map((eventType) => (
+                                  <div key={eventType.value} className="flex items-center space-x-2">
+                                    <div className={`w-3 h-3 ${eventType.color} rounded`}></div>
+                                    <span className="text-xs text-red-700">{eventType.label}</span>
+                                  </div>
+                                ))}
+                                <div className="border-t border-gray-300 pt-2 mt-2"></div>
+                              </>
                             )}
-                            <div className="flex items-center space-x-2 pt-2 border-t border-gray-200">
+                            
+                            {/* System Legend Items */}
+                            <div className="flex items-center space-x-2">
                               <div className="w-3 h-3 bg-red-100 border border-red-300 rounded"></div>
                               <span className="text-xs text-red-700">Fins de Semana e Feriados</span>
                             </div>
@@ -1461,57 +1467,7 @@ export default function CalendarioEscolar() {
                   </CardContent>
                 </Card>
 
-                {/* Event Types List */}
-                <Card className="border-red-200 bg-white">
-                  <CardHeader>
-                    <CardTitle className="text-red-800 flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Plus className="h-5 w-5" />
-                        <span>Tipos de Eventos Cadastrados</span>
-                      </div>
-                      <Badge variant="secondary" className="bg-red-100 text-red-700">
-                        {eventTypes.length}
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 max-h-96 overflow-y-auto">
-                      {eventTypes.length === 0 ? (
-                        <div className="text-center py-8">
-                          <Plus className="h-12 w-12 text-red-300 mx-auto mb-4" />
-                          <p className="text-red-600 font-medium mb-2">Nenhum tipo de evento cadastrado</p>
-                          <p className="text-red-500 text-sm">
-                            Clique em "Cadastros" → "Cadastrar Tipos de Eventos" para criar seu primeiro tipo
-                          </p>
-                        </div>
-                      ) : (
-                        eventTypes.map((eventType) => (
-                          <div
-                            key={eventType.id}
-                            className="flex items-center justify-between p-3 border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
-                          >
-                            <div className="flex items-center space-x-3">
-                              <div className={`w-4 h-4 ${eventType.color} rounded flex-shrink-0`}></div>
-                              <div className="min-w-0 flex-1">
-                                <div className="text-sm font-medium text-red-800 truncate">{eventType.label}</div>
-                                <div className="text-xs text-gray-500 mt-1">ID: {eventType.id}</div>
-                              </div>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => deleteEventType(eventType.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-100 border-red-300 flex-shrink-0"
-                              title={`Remover tipo de evento (ID: ${eventType.id})`}
-                            >
-                              Remover
-                            </Button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                
 
                 {/* Configuration List - New section */}
                 <Card className="border-red-200 bg-white">
