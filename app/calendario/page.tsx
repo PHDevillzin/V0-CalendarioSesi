@@ -1248,8 +1248,8 @@ export default function CalendarioEscolar() {
                         ${day ? "bg-white hover:bg-red-50" : "bg-gray-50"}
                         ${isToday(day) ? "ring-2 ring-red-500 bg-red-50" : ""}
                         ${day && (isWeekend(day) || isHoliday(day)) ? "bg-red-50" : ""}
+                        ${day && isAcademicDay(day) && !isRecessDay(day) ? "!bg-green-100 hover:!bg-green-200" : ""}
                         ${day && isRecessDay(day) ? "!bg-orange-100 hover:!bg-orange-200" : ""}
-                        ${day && isAcademicDay(day) ? "!bg-green-100 hover:!bg-green-200" : ""}
                       `}
                             onClick={() => day && handleDayClick(day)}
                           >
