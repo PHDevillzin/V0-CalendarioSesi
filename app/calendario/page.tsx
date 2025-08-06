@@ -343,7 +343,6 @@ export default function CalendarioEscolar() {
     type: "",
     isRecurring: false,
     recurringYears: 5, // Default to 5 years ahead
-    makeNonAcademic: false, // Option to make Saturday non-academic
   })
 
   // Academic year state
@@ -664,20 +663,8 @@ export default function CalendarioEscolar() {
     const academicStart = new Date(savedAcademicYear.start)
     const academicEnd = new Date(savedAcademicYear.end)
 
-    // Check if it's within academic year period
-    if (!(date >= academicStart && date <= academicEnd)) return false
-
-    // Check if it's a Saturday marked as non-academic
-    if (date.getDay() === 6) { // Saturday
-      const events = getEventForDate(day)
-      const hasNonAcademicEvent = events.some((event) => event.makeNonAcademic === true)
-      if (hasNonAcademicEvent) return false
-    }
-
-    // Sundays are never academic days
-    if (date.getDay() === 0) return false
-
-    return true
+    // Check if it's within academic year period - highlight ALL days in the period
+    return date >= academicStart && date <= academicEnd
   }
 
   // Handle day click - opens modal
@@ -685,7 +672,7 @@ export default function CalendarioEscolar() {
     setSelectedDay(day)
     const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
     setSelectedDate(dateString)
-    setEventForm({ title: "", type: "", isRecurring: false, recurringYears: 5, makeNonAcademic: false })
+    setEventForm({ title: "", type: "", isRecurring: false, recurringYears: 5 })
     setIsModalOpen(true)
   }
 
@@ -726,7 +713,6 @@ export default function CalendarioEscolar() {
           isRecurring: true,
           recurringGroup: `recurring_${Date.now()}`, // Group ID for recurring events
           recurringYear: eventYear,
-          makeNonAcademic: eventForm.makeNonAcademic,
         })
       }
 
@@ -750,13 +736,12 @@ export default function CalendarioEscolar() {
         displayDate: eventDateString,
         createdAt: new Date().toISOString(),
         isRecurring: false,
-        makeNonAcademic: eventForm.makeNonAcademic,
       })
     }
 
     setSchoolEvents(newEvents)
     setIsModalOpen(false)
-    setEventForm({ title: "", type: "", isRecurring: false, recurringYears: 5, makeNonAcademic: false })
+    setEventForm({ title: "", type: "", isRecurring: false, recurringYears: 5 })
     setSelectedDay(null)
   }
 
@@ -1974,27 +1959,6 @@ export default function CalendarioEscolar() {
                 </div>
               )}
             </div>
-
-            {/* Saturday Non-Academic Option */}
-            {selectedDay && new Date(year, month, selectedDay).getDay() === 6 && (
-              <div className="space-y-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="makeNonAcademic"
-                    checked={eventForm.makeNonAcademic}
-                    onChange={(e) => setEventForm({ ...eventForm, makeNonAcademic: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 border-blue-300 rounded focus:ring-blue-500 focus:ring-2"
-                  />
-                  <Label htmlFor="makeNonAcademic" className="text-blue-800 font-medium">
-                    Tornar este sábado não letivo
-                  </Label>
-                </div>
-                <p className="text-xs text-blue-700 ml-6">
-                  Este sábado não será contabilizado como dia letivo no resumo escolar.
-                </p>
-              </div>
-            )}
 
             <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
               <strong>ℹ️ Informação:</strong> Um ID único será gerado automaticamente para este evento.
