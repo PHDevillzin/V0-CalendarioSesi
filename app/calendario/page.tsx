@@ -343,7 +343,6 @@ export default function CalendarioEscolar() {
     type: "",
     isRecurring: false,
     recurringYears: 5, // Default to 5 years ahead
-    makeSaturdayNonAcademic: false, // Option for Saturdays
   })
 
   // Academic year state
@@ -663,19 +662,8 @@ export default function CalendarioEscolar() {
     const date = new Date(dateString)
     const academicStart = new Date(savedAcademicYear.start)
     const academicEnd = new Date(savedAcademicYear.end)
-    const dayOfWeek = date.getDay()
 
-    // Check if it's within academic year period and exclude Sundays (0)
-    // Sundays are never academic days
-    if (dayOfWeek === 0) return false
-
-    // Check if it's a Saturday marked as non-academic
-    if (dayOfWeek === 6) {
-      const events = getEventForDate(day)
-      const hasNonAcademicSaturday = events.some((event) => event.type === "sabado_nao_letivo")
-      if (hasNonAcademicSaturday) return false
-    }
-
+    // Check if it's within academic year period - highlight ALL days in the period
     return date >= academicStart && date <= academicEnd
   }
 
@@ -684,7 +672,7 @@ export default function CalendarioEscolar() {
     setSelectedDay(day)
     const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
     setSelectedDate(dateString)
-    setEventForm({ title: "", type: "", isRecurring: false, recurringYears: 5, makeSaturdayNonAcademic: false })
+    setEventForm({ title: "", type: "", isRecurring: false, recurringYears: 5 })
     setIsModalOpen(true)
   }
 
@@ -726,21 +714,6 @@ export default function CalendarioEscolar() {
           recurringGroup: `recurring_${Date.now()}`, // Group ID for recurring events
           recurringYear: eventYear,
         })
-
-        // If it's a Saturday and makeSaturdayNonAcademic is checked, add special event type
-        if (new Date(eventYear, baseMonth, baseDay).getDay() === 6 && eventForm.makeSaturdayNonAcademic) {
-          const nonAcademicId = generateUniqueId()
-          newEvents[clickedDateString].push({
-            id: nonAcademicId,
-            title: "Sábado não letivo",
-            type: "sabado_nao_letivo",
-            displayDate: eventDateString,
-            createdAt: new Date().toISOString(),
-            isRecurring: true,
-            recurringGroup: `recurring_${Date.now()}`,
-            recurringYear: eventYear,
-          })
-        }
       }
 
       alert(
@@ -764,24 +737,11 @@ export default function CalendarioEscolar() {
         createdAt: new Date().toISOString(),
         isRecurring: false,
       })
-
-      // If it's a Saturday and makeSaturdayNonAcademic is checked, add special event type
-      if (new Date(year, month, selectedDay).getDay() === 6 && eventForm.makeSaturdayNonAcademic) {
-        const nonAcademicId = generateUniqueId()
-        newEvents[clickedDateString].push({
-          id: nonAcademicId,
-          title: "Sábado não letivo",
-          type: "sabado_nao_letivo",
-          displayDate: eventDateString,
-          createdAt: new Date().toISOString(),
-          isRecurring: false,
-        })
-      }
     }
 
     setSchoolEvents(newEvents)
     setIsModalOpen(false)
-    setEventForm({ title: "", type: "", isRecurring: false, recurringYears: 5, makeSaturdayNonAcademic: false })
+    setEventForm({ title: "", type: "", isRecurring: false, recurringYears: 5 })
     setSelectedDay(null)
   }
 
@@ -929,7 +889,6 @@ export default function CalendarioEscolar() {
       }
       
       // Count as academic day if it's within academic year and not in recess
-      // Sundays are automatically excluded by isAcademicDay function
       if (isAcademicDay(day) && !isRecessDay(day)) {
         academicDays++
       }
@@ -2001,29 +1960,8 @@ export default function CalendarioEscolar() {
               )}
             </div>
 
-            {/* Saturday Non-Academic Option - only show for Saturdays */}
-            {selectedDay && new Date(year, month, selectedDay).getDay() === 6 && (
-              <div className="space-y-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="makeSaturdayNonAcademic"
-                    checked={eventForm.makeSaturdayNonAcademic}
-                    onChange={(e) => setEventForm({ ...eventForm, makeSaturdayNonAcademic: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 border-blue-300 rounded focus:ring-blue-500 focus:ring-2"
-                  />
-                  <Label htmlFor="makeSaturdayNonAcademic" className="text-blue-800 font-medium">
-                    Tornar este sábado não letivo
-                  </Label>
-                </div>
-                <p className="text-xs text-blue-700 ml-6">
-                  Marque esta opção se este sábado não deve contar como dia letivo, mesmo estando dentro do período letivo.
-                </p>
-              </div>
-            )}
-
             <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
-              <strong>ℹ️ Informação:</strong> Um ID único será gerado automaticamente para este evento. Domingos nunca contam como dias letivos.
+              <strong>ℹ️ Informação:</strong> Um ID único será gerado automaticamente para este evento.
             </div>
           </div>
 
